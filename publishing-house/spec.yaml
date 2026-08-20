@@ -9,7 +9,7 @@ project:
   slug: "rh1-ocp5-opp"
   owner_email: "jialvare@redhat.com"
   content_type: "lab"
-  deployment_mode: "self_published"
+  deployment_mode: "rhdp_published"
   initiative_key: "rh1_2027"
   showroom_type: "classic"
   intake_type: "migration"
