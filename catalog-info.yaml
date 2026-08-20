@@ -1,0 +1,47 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rh1-ocp5-opp
+  title: rh1-ocp5-opp
+  description: This hands-on OpenShift Platform Plus (OPP) lab environment offers
+    a complete enterprise architecture for building, securing, and operating
+    multi-cluster Kubernetes fleets at scale. Built on a hub-and-spoke model
+    using Red Hat OpenShift Container Platform, the lab integrates the full OPP
+    suite—utilizing Red Hat Advanced Cluster Management (RHACM) for global fleet
+    governance and GitOps automation, Red Hat Advanced Cluster Security (RHACS)
+    for continuous DevSecOps compliance and runtime threat detection, Red Hat
+    Quay for enterprise-grade container registry management, and Red Hat
+    OpenShift Data Foundation (ODF) for unified software-defined storage.
+    Through practical, real-world scenarios, platform engineers, DevSecOps
+    specialists, and SREs gain direct experience enforcing zero-trust security
+    policies, automating multi-cluster observability, and managing resilient
+    stateful workloads across hybrid cloud environments.
+  annotations:
+    ph.rhdp.io/content-type: lab
+    ph.rhdp.io/deployment-mode: self_published
+    ph.rhdp.io/github-user: jalvarez-rh
+    ph.rhdp.io/owner: jialvare@redhat.com
+    ph.rhdp.io/migrated-repo: https://github.com/rhpds/sovereign-cloud-showroom
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: rhpds/rh1-ocp5-opp
+    ph.rhdp.io/created-at: 2026-08-20T16:08:52.415Z
+  tags:
+    - publishing-house
+    - lab
+    - self-published
+    - migration
+  links:
+    - url: https://github.com/rhpds/rh1-ocp5-opp
+      title: Repository
+      icon: github
+    - url: https://devspaces.apps.ocpv-infra02.wdc07.infra.demo.redhat.com#https://github.com/rhpds/rh1-ocp5-opp
+      title: Open in DevSpaces
+      icon: catalog
+    - url: https://central-api-publishing-house.apps.ocpv-infra02.wdc07.infra.demo.redhat.com
+      title: Central
+      icon: dashboard
+spec:
+  type: content
+  lifecycle: experimental
+  owner: rhdp-team
+  system: publishing-house

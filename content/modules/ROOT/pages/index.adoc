@@ -1,0 +1,140 @@
+[[labname]]
+
+= {lab_name}
+
+[[introduction]]
+== Introduction
+
+Organizations today want flexibility. They want to do more, with less, while accelerating AI adoption to stay ahead of the market. Organizations have geographic specific compliance standards, petabytes of data in restricted environments, and increasing provider costs are all pushing organizations to reevaluate their technology strategies. Organizations are seeking a "Sovereign Cloud" approach from their technology providers to provide the flexibility necessary to be adaptive in the age of AI and geographic specific requirements.
+
+*We at Red Hat are perfectly positioned to help organizations achieve these goals.* 
+
+Red Hat is THE Open Source and Linux company built on the principles of openness, collaboration, and innovation. Red Hat's existing hybrid cloud approach, was designed to help organizations manage data privacy and compliance concerns, bringing simplified management of OpenShift clusters, containers, virtual machines, and AI applications to an organization's data. The Hybrid cloud approach is built to enable organizations to deploy and manage their own sovereign cloud architectures, enabling application and data mobility and policy enforcement.
+
+[[what-youll-learn]]
+== What You'll Learn
+
+In this lab, you will progress through a simplified migration process where you, the customer, will bring your workflows and applications to an on premise and cloud environment, bringing your platform, to your data, in a compliant, secure, and repeatable manner.
+
+Through hands-on activities, you will:
+
+* Configure geographically-distributed OpenShift clusters with automated compliance policies
+* Implement workload placement strategies that enforce data residency requirements
+* Deploy applications with built-in sovereignty enforcement
+* Establish audit trails and compliance reporting for regulatory demonstrations
+* Design disaster recovery scenarios that maintain geographic data constraints
+
+[[prerequisites]]
+== Prerequisites
+
+Before beginning this lab, you should have:
+
+* Solid OpenShift administration experience
+* Familiarity with multi-cluster concepts
+
+[[lab-modules]]
+== Lab Modules
+
+This lab is organized into five modules:
+
+* xref:module-01.adoc[Module 1: Operations and Security] - Multi-environment cluster and workload management
+* xref:module-02.adoc[Module 2: Assurance] - Cluster conformance, compliance, and security insights
+* xref:module-03.adoc[Module 3: Technology and Supply Chain] - Secure supply chain and SLSA framework
+* xref:module-04.adoc[Module 4: Data and AI] - Data pipelines and AI compute capabilities
+* xref:module-05.adoc[Module 5: Supplementary modules] - Optional extra hands-on material
+* xref:conclusion.adoc[Conclusion] - Summary, key takeaways, and next steps
+
+[[getting-started]]
+== Getting Started
+
+This lab has two OpenShift clusters pre-configured. One cluster called *local-cluster* and another cluster in AWS labelled *aws-us*. 
+
+The environment has also already been pre-configured for you with the following applications already deployed:
+
+* On the right there are five tabs:
+** *OpenShift Console*: this is where you will spend the majority of the time configuring the various environments and applications
+** *Advanced Cluster Security*: the console for OpenShiftsecurity related activities.
+** *Quay*: the console for image registry and artifacts
+** *OpenShift AI*: the console for building and training AI models via Jupyter notebooks and specialized accelerators
+** *Terminal*: command line access to the OpenShift environment. You will run commands in this tab to deploy a few initial settings and interact with the applications.
+
+=== Install Insecure Applications While You Work on Module 1
+
+We are going to deploy a bunch of insecure applications to the local cluster and ensure the lab is set up correctly.
+
+*Procedure*
+
+[start=1]
+. Copy and paste the following commands into the *Terminal tab* on the right side of the screen.
++
+[source,sh,subs="attributes",role=execute]
+----
+cd ~ && git clone https://github.com/rhpds/sovereign-cloud-showroom.git svc-lab
+cd ~/svc-lab
+bash setup.sh
+----
+
+[IMPORTANT]
+====
+The following command can run while you work on the first module. You do not have to wait for it to finish before starting module 1. 
+====
+
+=== OpenShift Console Access (and RHACM Console Access)
+
+The Red Hat Advanced Cluster Management for Kubernetes (RHACM) Console is now integrated with OpenShift Console. To access it, select *Fleet Management* from the dropdown menu on the left once you log in.
+
+Switch to the *OpenShift Console* tab in the right panel. In case you want to open it in another window it is here: {openshift_cluster_console_url}[window=blank]
+
+NOTE: ctrl + click on the URL to open URLs in a new tab.
+
+Administrator login credentials:
+
+[cols="1,1"]
+|===
+| *Username:* | {openshift_cluster_admin_username}
+| *Password:* | {openshift_cluster_admin_password}
+|===
+
+=== RHACS Console Access
+
+Your RHACS Console is also available in the right panel. In case you want to open it in another window it is here: {acs_route}[window=blank]
+
+Administrator login credentials:
+
+[cols="1,1"]
+|===
+| *RHACS Console Username:* | {acs_portal_username}
+| *RHACS Console Password:* | {acs_portal_password}
+|===
+
+=== Red Hat Quay Console Access
+
+Your Red Hat Quay Console is also available in the right panel. In case you want to open it in another window it is here: {quay_console_url}[window=blank]
+
+Administrator login credentials:
+
+[cols="1,1"]
+|===
+| *Red Hat Quay Console Username:* | {quay_admin_username}
+| *Red Hat Quay Console Password:* | {quay_admin_password}
+|===
+
+=== OpenShift AI Console Access
+
+Your OpenShift AI Console is also available in the right panel. In case you want to open it in another window it is here: {rhoai_dashboard}[window=blank]
+
+Administrator login credentials:
+
+[cols="1,1"]
+|===
+| *OpenShift AI Console Username:* | {openshift_cluster_admin_username}
+| *OpenShift AI Console Password:* | {acs_portal_password}
+|===
+
+[[whats-next]]
+== What's Next
+
+[.text-center]
+image::https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWtnYWVvd3NmdHB6NXhkZjE1N3BzdGpyZG5vajIzeTY2NDE5a2J6NiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3og0ICZh82LEsNjHoc/giphy.gif[Celebration, width=400, link=self, window=blank]
+
+Proceed to Module 1 and move through the modules in order. Good luck!

@@ -1,0 +1,37 @@
+* xref:index.adoc[Intro - Sovereign Cloud Architecture]
+** xref:index.adoc#introduction[Introduction]
+** xref:index.adoc#what-youll-learn[What You Will Learn]
+** xref:index.adoc#prerequisites[Prerequisites]
+** xref:index.adoc#lab-modules[Lab Modules]
+** xref:index.adoc#getting-started[Getting Started]
+** xref:index.adoc#whats-next[What Is Next]
+
+* xref:module-01.adoc[1. Operations and Security]
+** xref:module-01.adoc#multi-env-clusters[Multi-environment OCP Cluster and Virtual Machine Creation and Management]
+** xref:module-01.adoc#multi-env-workloads[Multi-environment Workload Creation, Management, and Observability]
+** xref:module-01.adoc#create-manage-vms[Create and Manage Virtual Machines]
+** xref:module-01.adoc#deploy-applications-using-openshift-gitops[Multi-environment Application Deployment and Management]
+
+* xref:module-02.adoc[2. Assurance]
+** xref:module-02.adoc#security-and-environment-insights[Security and Environment Insights]
+** xref:module-02.adoc#rhacs-compliance-operator-installation-and-compliance-checks[Compliance Checks with RHACS and the Compliance Operator]
+** xref:module-02.adoc#maintaining-control-in-sovereign-multi-region-environments[Maintaining Control in Sovereign and Multi-Region Environments]
+** xref:module-02.adoc#use-policy-as-code-block-anomalous-runtime[Use Policy-as-Code to Block Anomalous Behavior at Runtime]
+** xref:module-02.adoc#violations-reporting-audit-compliance[Violations and Reporting for Audit and Compliance]
+
+* xref:module-03.adoc[3. Technology and Supply Chain]
+** xref:module-03.adoc#module-goals[Module Goals]
+** xref:module-03.adoc#setup[Installation and Setup]
+** xref:module-03.adoc#signing-your-software[Signing Your Software]
+
+* xref:module-04.adoc[4. Data and AI]
+** xref:module-04.adoc#sovereign-ai-overview[Sovereign AI: Bringing Intelligence to Your Data]
+** xref:module-04.adoc#exploring-openshift-ai-dashboard[Exploring the OpenShift AI Dashboard]
+** xref:module-04.adoc#deploying-a-jupyter-notebook[Deploying a Jupyter Notebook]
+
+* xref:conclusion.adoc[Conclusion]
+
+* xref:module-05.adoc[Supplementary modules (optional)]
+** xref:module-05.adoc#deploying-more-policies-to-the-emea-cluster[Deploying MORE Policies to the EMEA Cluster]
+** xref:module-05.adoc#deploying-policies-to-the-us-cluster[Deploying Policies to the US Cluster]
+** xref:module-05.adoc#organize-policies-by-geo[Organizing Policies by Geography]
