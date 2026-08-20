@@ -18,7 +18,7 @@ metadata:
     stateful workloads across hybrid cloud environments.
   annotations:
     ph.rhdp.io/content-type: lab
-    ph.rhdp.io/deployment-mode: self_published
+    ph.rhdp.io/deployment-mode: rhdp_published
     ph.rhdp.io/github-user: jalvarez-rh
     ph.rhdp.io/owner: jialvare@redhat.com
     ph.rhdp.io/migrated-repo: https://github.com/rhpds/sovereign-cloud-showroom
@@ -28,7 +28,7 @@ metadata:
   tags:
     - publishing-house
     - lab
-    - self-published
+    - rhdp-published
     - migration
   links:
     - url: https://github.com/rhpds/rh1-ocp5-opp
