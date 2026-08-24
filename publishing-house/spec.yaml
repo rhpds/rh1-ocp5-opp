@@ -125,8 +125,37 @@ approval_checklist:
         overview: "Students explore the RHOAI dashboard, launch a CPU-based Python 3.12 Jupyter workbench, and execute a student performance prediction notebook — demonstrating end-to-end AI inference within a self-managed sovereign cluster without GPU accelerators or external AI API dependencies."
       - title: "Supplementary Governance (Optional)"
         overview: "Students extend RHACM governance with a NetworkPolicy egress block for GDPR namespaces on the EMEA cluster, apply NIST SP 800-53 namespace compliance and API audit logging policies to the US cluster, and organize all regional policies into PolicySets for a structured governance dashboard view."
-    rcars_overlap_pct: null
-    rcars_top_matches: []
+    rcars_overlap_pct: 83
+    rcars_top_matches:
+      - title: "Hands-on lab with Red Hat OpenShift Platform Plus (2025)"
+        ci_name: "sandboxes-gpte.opp-hol.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=sandboxes-gpte.opp-hol.prod"
+        relevance_score: 83
+        why_it_fits: "Directly covers the core stack — RHACM multi-cluster governance, RHACS runtime and policy enforcement, Red Hat Quay image security, and Policy-as-Code with Kyverno and GitOps — making it a strong match for platform engineers and DevSecOps practitioners targeting fleet governance and container security."
+        workloads: []
+      - title: "Build Secure, Streamlined Developer Workflows with Red Hat Advanced Developer Suite"
+        ci_name: "published.rhads-secure-dev-workflows.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=published.rhads-secure-dev-workflows.prod"
+        relevance_score: 60
+        why_it_fits: "Covers RHACS, RHTAS, Red Hat Quay, cosign/keyless signing, and supply chain policy enforcement that are central to the request, but lacks RHACM multi-cluster fleet governance, GDPR/NIST policy-as-code, and sovereign on-premises AI components."
+        workloads:
+          - role: "ocp4_workload_rhacs"
+            collection: "agnosticd.core_workloads"
+          - role: "ocp4_workload_quay_operator"
+            collection: "agnosticd.core_workloads"
+          - role: "trusted_artifact_signer"
+            collection: "rhpds.build_secured_dev_workflows"
+      - title: "LB1464: Unifying DevSecOps: Secure, Standardized Application Delivery Across Containers (CNV)"
+        ci_name: "summit-2026.lb1464-unified-devsecops-delivery-cnv.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=summit-2026.lb1464-unified-devsecops-delivery-cnv.prod"
+        relevance_score: 58
+        why_it_fits: "Covers RHTAS/cosign artifact signing, RHACS, Red Hat Quay, and policy-driven supply chain security, but lacks RHACM multi-cluster fleet governance, GDPR/NIST policy-as-code, and sovereign AI deployment."
+        workloads:
+          - role: "ocp4_workload_rhacs"
+            collection: "agnosticd.core_workloads"
+          - role: "trusted_artifact_signer"
+            collection: "rhpds.build_secured_dev_workflows"
+    catalog_gap: "No existing catalog item integrates all four sovereign cloud pillars — multi-cluster fleet governance with data residency policy-as-code, continuous compliance assurance across regulatory frameworks (GDPR, NIST 800-53, CIS, E8), container supply chain signing with RHTAS, and sovereign on-premises AI — within a single scenario. Existing labs cover subsets of this stack but require instructors to stitch together multiple labs to achieve the same breadth."
     rejections: []
 
   infra:
