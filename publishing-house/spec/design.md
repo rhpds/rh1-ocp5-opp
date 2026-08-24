@@ -81,13 +81,13 @@ Advanced
 
 ## Infrastructure Requirements
 
-- **Cloud provider:** TBD — confirmed in infrastructure phase
-- **Cluster type:** TBD — confirmed in infrastructure phase
-- **OCP version:** TBD — confirmed in infrastructure phase
-- **Topology:** TBD — confirmed in infrastructure phase
-- **Sizing:** TBD — confirmed in infrastructure phase
-- **Automation approach:** TBD — confirmed in infrastructure phase
-- **AI/MaaS:** TBD — confirmed in infrastructure phase
-- **External services:** TBD — confirmed in infrastructure phase
-- **AAP version:** TBD — confirmed in infrastructure phase
-- **Non-GA products:** TBD — confirmed in infrastructure phase
+- **Cloud provider:** CNV
+- **Cluster type:** Multinode (OpenShift Virtualization, RHACM, RHACS, Quay, RHOAI, and RHTAS all run on the hub simultaneously)
+- **OCP version:** 4.21
+- **Topology:** Per-student
+- **Sizing:** TBD — confirmed by infra reviewer (hub must support full OPP operator stack; worker sizing and count TBD)
+- **Automation approach:** Both — Ansible (setup/provisioning) and GitOps/Helm (ArgoCD workload deployment)
+- **AI/MaaS:** None (RHOAI present but CPU-only; no model serving, no GPU, no MaaS)
+- **External services:** github.com (setup scripts, demo app manifests, AI notebook), registry.access.redhat.com (UBI base image pull in Module 3)
+- **AAP version:** N/A (AAP not in products)
+- **Non-GA products:** None (all products are GA)

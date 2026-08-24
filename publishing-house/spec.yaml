@@ -53,13 +53,13 @@ spec:
       status: not_started
   environment:
     platform: "ocp"            # ocp | rhel-vms — determines which sizing fields apply
-    topology: ""               # shared-cluster | per-student | cnv-pool
+    topology: "per-student"    # shared-cluster | per-student | cnv-pool
     cloud_provider: cnv        # cnv | aws | troshka — cnv is default
     max_concurrent_users: null # required if topology = shared-cluster
 
     # --- OCP-specific fields (only when platform = ocp) ---
     ocp_version: "4.21"                # e.g. 4.20 — minimum 4.20; leave empty for rhel-vms
-    cluster_type: ""                   # sno | multinode — only for platform = ocp
+    cluster_type: "multinode"          # sno | multinode — only for platform = ocp
     control_plane_instance_count: null # 1 if sno, 3 if multinode
     control_plane_cpu: null            # 32 if sno, 16 if multinode
     control_plane_ram_gb: null         # 128 if sno, 64 if multinode
@@ -82,6 +82,7 @@ spec:
     non_ga_access_plan: ""             # how access is provided for non-GA products
     external_services:
       - "github.com"                   # named external service dependencies
+      - "registry.access.redhat.com"
     gpu_nodes: 0                       # number of GPU nodes (0 = none)
     gpu_type: ""                       # e.g. NVIDIA A100 40GB (required if gpu_nodes > 0)
   duration_hours: 3.25
