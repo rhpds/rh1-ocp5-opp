@@ -16,8 +16,8 @@ project:
   automation_type: "both"
   description: "This hands-on OpenShift Platform Plus (OPP) lab environment offers a complete enterprise architecture for building, securing, and operating multi-cluster Kubernetes fleets at scale. Built on a hub-and-spoke model using Red Hat OpenShift Container Platform, the lab integrates the full OPP suite—utilizing Red Hat Advanced Cluster Management (RHACM) for global fleet governance and GitOps automation, Red Hat Advanced Cluster Security (RHACS) for continuous DevSecOps compliance and runtime threat detection, Red Hat Quay for enterprise-grade container registry management, and Red Hat OpenShift Data Foundation (ODF) for unified software-defined storage. Through practical, real-world scenarios, platform engineers, DevSecOps specialists, and SREs gain direct experience enforcing zero-trust security policies, automating multi-cluster observability, and managing resilient stateful workloads across hybrid cloud environments."
   # content_reviewer_email and infra_reviewer_email are assigned by the RHDP team — not set by the author
-  jira_ticket: ""
-  workflow_id: ""
+  jira_ticket: "RHDPCD-1146"
+  workflow_id: "d02c43ac-917e-4f3c-ba06-a85ea5bcea62"
 
 spec:
   title: ""

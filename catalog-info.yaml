@@ -3,19 +3,18 @@ kind: Component
 metadata:
   name: rh1-ocp5-opp
   title: rh1-ocp5-opp
-  description: This hands-on OpenShift Platform Plus (OPP) lab environment offers
-    a complete enterprise architecture for building, securing, and operating
-    multi-cluster Kubernetes fleets at scale. Built on a hub-and-spoke model
-    using Red Hat OpenShift Container Platform, the lab integrates the full OPP
-    suite—utilizing Red Hat Advanced Cluster Management (RHACM) for global fleet
-    governance and GitOps automation, Red Hat Advanced Cluster Security (RHACS)
-    for continuous DevSecOps compliance and runtime threat detection, Red Hat
-    Quay for enterprise-grade container registry management, and Red Hat
-    OpenShift Data Foundation (ODF) for unified software-defined storage.
-    Through practical, real-world scenarios, platform engineers, DevSecOps
-    specialists, and SREs gain direct experience enforcing zero-trust security
-    policies, automating multi-cluster observability, and managing resilient
-    stateful workloads across hybrid cloud environments.
+  description: "This hands-on OpenShift Platform Plus (OPP) lab environment offers\
+    \ a complete enterprise architecture for building, securing, and operating multi-cluster\
+    \ Kubernetes fleets at scale. Built on a hub-and-spoke model using Red Hat OpenShift\
+    \ Container Platform, the lab integrates the full OPP suite\u2014utilizing Red\
+    \ Hat Advanced Cluster Management (RHACM) for global fleet governance and GitOps\
+    \ automation, Red Hat Advanced Cluster Security (RHACS) for continuous DevSecOps\
+    \ compliance and runtime threat detection, Red Hat Quay for enterprise-grade container\
+    \ registry management, and Red Hat OpenShift Data Foundation (ODF) for unified\
+    \ software-defined storage. Through practical, real-world scenarios, platform\
+    \ engineers, DevSecOps specialists, and SREs gain direct experience enforcing\
+    \ zero-trust security policies, automating multi-cluster observability, and managing\
+    \ resilient stateful workloads across hybrid cloud environments."
   annotations:
     ph.rhdp.io/content-type: lab
     ph.rhdp.io/deployment-mode: rhdp_published
@@ -24,22 +23,25 @@ metadata:
     ph.rhdp.io/migrated-repo: https://github.com/rhpds/sovereign-cloud-showroom
     backstage.io/techdocs-ref: dir:.
     github.com/project-slug: rhpds/rh1-ocp5-opp
-    ph.rhdp.io/created-at: 2026-08-20T16:08:52.415Z
+    ph.rhdp.io/created-at: 2026-08-20 16:08:52.415000+00:00
   tags:
-    - publishing-house
-    - lab
-    - rhdp-published
-    - migration
+  - publishing-house
+  - lab
+  - rhdp-published
+  - migration
   links:
-    - url: https://github.com/rhpds/rh1-ocp5-opp
-      title: Repository
-      icon: github
-    - url: https://devspaces.apps.ocpv-infra02.wdc07.infra.demo.redhat.com#https://github.com/rhpds/rh1-ocp5-opp
-      title: Open in DevSpaces
-      icon: catalog
-    - url: https://central-api-publishing-house.apps.ocpv-infra02.wdc07.infra.demo.redhat.com
-      title: Central
-      icon: dashboard
+  - url: https://github.com/rhpds/rh1-ocp5-opp
+    title: Repository
+    icon: github
+  - url: https://devspaces.apps.ocpv-infra02.wdc07.infra.demo.redhat.com#https://github.com/rhpds/rh1-ocp5-opp
+    title: Open in DevSpaces
+    icon: catalog
+  - url: https://central-api-publishing-house.apps.ocpv-infra02.wdc07.infra.demo.redhat.com
+    title: Central
+    icon: dashboard
+  - url: https://redhat.atlassian.net/browse/RHDPCD-1146
+    title: Jira Epic
+    icon: dashboard
 spec:
   type: content
   lifecycle: experimental
