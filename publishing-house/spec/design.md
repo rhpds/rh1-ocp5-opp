@@ -1,89 +1,93 @@
-# [Project Title]
-
-<!-- This file is the design document for your lab or demo. -->
-<!-- Fill in each section below, or run /rhdp-publishing-house to have the intake skill help. -->
-<!-- Sections marked with [brackets] are placeholders — replace with real content. -->
-<!-- The validation gate checks for all required sections before submission. -->
+# LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data Residency and Compliance Management
 
 ## Overview
 
-[2-3 sentences on what this lab or demo is and why it exists. Then a direct description of what participants will do — specific enough that someone reading this section immediately understands the content without interpretation. No flowery language. Example: "Participants will deploy a 3-tier application on OpenShift, configure autoscaling, and troubleshoot a simulated pod failure."]
+This lab delivers hands-on experience designing and operating a sovereign cloud architecture using the Red Hat OpenShift Platform Plus suite across multiple clusters. It addresses the core pillars of digital sovereignty: data residency enforcement, continuous compliance assurance, supply chain integrity, and on-premises AI. Participants will create a Hosted Control Plane (HCP) cluster scoped to an EMEA region, enforce GDPR and NIST policy-as-code across geographically separated clusters using RHACM, run multi-profile compliance scans and observe real-time runtime security enforcement with RHACS, build and cryptographically sign container images using Red Hat Trusted Artifact Signer, and deploy a CPU-based AI workbench with Red Hat OpenShift AI — all without relying on external cloud provider services.
 
 ## Target Audience
 
-- **Role:** [Data scientists, platform engineers, developers, etc.]
-- **Experience level:** [Beginner, intermediate, or advanced]
-- **What they already know:** [Existing skills and knowledge]
-- **What they don't know:** [Skills this lab teaches]
+- **Role:** Platform engineers, DevSecOps practitioners, Site Reliability Engineers (SREs)
+- **Experience level:** Advanced
+- **What they already know:** Solid OpenShift administration experience; familiarity with multi-cluster Kubernetes concepts and GitOps workflows
+- **What they don't know:** Multi-cluster fleet governance and data residency policy-as-code with RHACM; runtime threat detection and automated enforcement with RHACS; container image signing with Sigstore/RHTAS; sovereign on-premises AI deployment with RHOAI
 
 ## Prerequisites
 
-- [What the learner must know or have completed before starting]
-- [Can the lab validate these automatically? Yes/No — brief explanation]
-
-<!-- If no prerequisites, write "None" -->
+- Solid Red Hat OpenShift administration experience (cluster deployment, RBAC, workload management)
+- Familiarity with multi-cluster Kubernetes concepts (hub-and-spoke, managed clusters)
+- No — prerequisites cannot be validated automatically; learners self-attest at lab start
 
 ## Learning Objectives
 
-1. [Action verb] [specific, measurable outcome]
-2. [Action verb] [specific, measurable outcome]
-3. [Action verb] [specific, measurable outcome]
-
-<!-- Scale to duration: up to 3 objectives per 45 min of content. Start with action verbs: Configure, Deploy, Create, Implement, Troubleshoot, Monitor, Scale. Each should be testable. NOT: Understand, Learn, Know. -->
+1. Deploy a Hosted Control Plane (HCP) cluster in an EMEA region using Red Hat Advanced Cluster Management and verify it is registered in the fleet inventory
+2. Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster
+3. Deploy containerized workloads across three clusters using Red Hat OpenShift GitOps (Argo CD) ApplicationSets
+4. Configure multi-profile compliance scans (CIS, Essential 8, NERC-CIP, PCI-DSS, STIG) across clusters using RHACS and the Compliance Operator
+5. Observe and verify real-time runtime security enforcement by triggering a RHACS policy violation and confirming pod termination
+6. Build a container image from a Red Hat UBI golden base image and push it to a private Red Hat Quay registry
+7. Sign container images using cosign backed by Red Hat Trusted Artifact Signer (Fulcio CA, Rekor transparency log, TUF) with OIDC identity verification
+8. Deploy a Jupyter workbench on Red Hat OpenShift AI and execute a data science notebook on CPU-only infrastructure as a sovereign alternative to cloud AI services
 
 ## Content Type
 
-[Lab (hands-on) or Demo (presenter-led)]
+Lab (hands-on)
 
 ## Products & Technologies
 
-- [Official Red Hat product name with version if relevant]
-- [Additional products/technologies]
+Red Hat products:
+- Red Hat OpenShift Container Platform 4.21
+- Red Hat Advanced Cluster Management for Kubernetes (RHACM)
+- Red Hat Advanced Cluster Security for Kubernetes (RHACS)
+- Red Hat OpenShift Virtualization
+- Red Hat OpenShift GitOps (Argo CD)
+- Red Hat Quay
+- Red Hat OpenShift AI (RHOAI)
+- Red Hat Trusted Artifact Signer (RHTAS)
+- Red Hat Universal Base Image (UBI)
+- Compliance Operator
+- Red Hat build of Keycloak
 
-<!-- Use official names: "Red Hat OpenShift", not "OpenShift". List upstream projects separately. -->
+Open source and community:
+- Hosted Control Plane (HyperShift)
+- cosign (Sigstore — Fulcio, Rekor, TUF)
+- podman
+- Skupper
+- Argo CD
+- JupyterLab
 
 ## Module Map
 
 | Module | Title | Duration |
 |--------|-------|----------|
-| 1 | [Module title] | [XX min] |
-| 2 | [Module title] | [XX min] |
-| — | **Total hands-on** | **[X hours]** |
-| — | Intro / presentation | [~XX min] |
-| — | **Total lab** | **[~X hours]** |
-
-<!-- Each module 10-30 min. Total: lab 1-4 hours, demo 15-45 min. Modules should build on each other. -->
+| Intro | Introduction and Setup | 10 min |
+| 1 | Operations and Security | 50 min |
+| 2 | Assurance | 45 min |
+| 3 | Technology and Supply Chain | 40 min |
+| 4 | Data and AI | 20 min |
+| 5 | Supplementary Governance (Optional) | 25 min |
+| — | Conclusion | 5 min |
+| — | **Total hands-on (core)** | **~2 h 45 min** |
+| — | **Total lab (including optional)** | **~3 h 15 min** |
 
 ## Difficulty Level
 
-[Beginner, Intermediate, or Advanced]
+Advanced
 
 ## Environment
 
-**Learner view:** [What exists when the lab starts — pre-deployed resources, what participants see and interact with. Be specific about cluster details.]
+**Learner view:** The lab starts with two pre-provisioned OpenShift clusters: a hub cluster (local-cluster) running RHACM, RHACS, Red Hat Quay, Red Hat OpenShift AI, and Red Hat Trusted Artifact Signer, and a managed cluster (aws-us) registered in the RHACM fleet. A background setup script (setup.sh) runs at lab start to prepare application manifests and credentials. Participants receive console access credentials for OpenShift, RHACS, Quay, RHOAI, and a terminal. During Module 1, participants create a third cluster (HCP/EMEA) via the RHACM console. One pre-deployed RHEL VM (rhel-webserver) exists on the hub cluster; participants create an additional RHEL VM (rhel9-lab-vm) during the lab.
 
-**Automation needed:** [Yes/No]
-
-[If yes, list what automation must provision — operators, per-user resources, sample apps, data sets.]
+**Automation needed:** Yes — a setup script provisions initial lab state (application repos, credential injection, RHTAS stack initialization). Background automation pre-deploys operators and platform services (RHACM, RHACS, Quay, RHOAI, RHTAS, OpenShift Virtualization) on the hub cluster before the lab session begins.
 
 ## Infrastructure Requirements
 
-- **Cloud provider:** [CNV (default), AWS, or Troshka (bare-metal/nested virt)]
-- **Cluster type:** [Multinode or SNO (Single Node OpenShift)]
-- **OCP version:** [e.g. 4.20 — minimum 4.20]
-- **Topology:** [Shared cluster, per-student, or CNV pool]
-- **Sizing:** [Node types and counts with resources — e.g., "3 control plane (16 CPU, 64GB RAM), 6 workers (8 CPU, 32GB RAM, 100GB disk)"]
-- **Automation approach:** [Ansible, GitOps (Helm + ArgoCD), or combo]
-- **AI/MaaS:** [None, MaaS (open-source model), MaaS (frontier model), or dedicated GPU — include justification if not "none"]
-- **External services:** [Named services — e.g., github.com, registry.access.redhat.com — or "None"]
-- **AAP version:** [e.g. 2.5 — only if AAP is in products; omit otherwise]
-- **Non-GA products:** [Product name + version, with access plan — or "None (all products are GA)"]
-
-<!-- Not all fields must be known at intake. "TBD, estimating ~X" is fine. -->
-
-## Assessment Strategy (Optional)
-
-<!-- Optional — skip this section for demos or classic labs without verification. -->
-<!-- Relevant for Zero-Touch labs with solve/validate buttons or labs with automated checks. -->
-
-[If applicable: how will we know the learner successfully completed each module? Per module: verification script, solve/validate button, visible result in the UI, or automated check.]
+- **Cloud provider:** TBD — confirmed in infrastructure phase
+- **Cluster type:** TBD — confirmed in infrastructure phase
+- **OCP version:** TBD — confirmed in infrastructure phase
+- **Topology:** TBD — confirmed in infrastructure phase
+- **Sizing:** TBD — confirmed in infrastructure phase
+- **Automation approach:** TBD — confirmed in infrastructure phase
+- **AI/MaaS:** TBD — confirmed in infrastructure phase
+- **External services:** TBD — confirmed in infrastructure phase
+- **AAP version:** TBD — confirmed in infrastructure phase
+- **Non-GA products:** TBD — confirmed in infrastructure phase
