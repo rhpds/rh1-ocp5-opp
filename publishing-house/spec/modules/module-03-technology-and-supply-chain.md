@@ -8,7 +8,7 @@ This module addresses software supply chain integrity — a core pillar of sover
 
 - **Target personas:** DevSecOps practitioners, platform engineers, software supply chain security engineers
 - **Prerequisites for this module:** Quay console access; terminal access with podman and cosign installed; RHTAS stack pre-deployed on hub cluster (Fulcio, Rekor, TUF, SecureSign operator); Keycloak OIDC client pre-configured
-- **Estimated duration:** 40 minutes
+- **Estimated duration:** 30 minutes
 
 ## Learning Objectives
 

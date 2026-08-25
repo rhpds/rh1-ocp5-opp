@@ -60,14 +60,13 @@ Open source and community:
 | Module | Title | Duration |
 |--------|-------|----------|
 | Intro | Introduction and Setup | 10 min |
-| 1 | Operations and Security | 50 min |
-| 2 | Assurance | 45 min |
-| 3 | Technology and Supply Chain | 40 min |
-| 4 | Data and AI | 20 min |
-| 5 | Supplementary Governance (Optional) | 25 min |
+| 1 | Operations and Security | 35 min |
+| 2 | Assurance | 30 min |
+| 3 | Technology and Supply Chain | 30 min |
+| 4 | Data and AI | 10 min |
 | — | Conclusion | 5 min |
-| — | **Total hands-on (core)** | **~2 h 45 min** |
-| — | **Total lab (including optional)** | **~3 h 15 min** |
+| — | **Total lab** | **~2 h** |
+| 5 | Supplementary Governance (Optional) | +25 min |
 
 ## Difficulty Level
 

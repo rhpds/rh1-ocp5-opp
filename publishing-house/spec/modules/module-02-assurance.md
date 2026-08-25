@@ -8,7 +8,7 @@ This module focuses on continuous security assurance using Red Hat Advanced Clus
 
 - **Target personas:** DevSecOps practitioners, security engineers, platform SREs
 - **Prerequisites for this module:** Module 1 complete; HCP/EMEA cluster is registered in RHACM; RHACS console access credentials available
-- **Estimated duration:** 45 minutes
+- **Estimated duration:** 30 minutes
 
 ## Learning Objectives
 

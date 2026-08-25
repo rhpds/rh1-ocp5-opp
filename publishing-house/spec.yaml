@@ -33,19 +33,19 @@ spec:
   modules:
     - id: module-01
       title: "Operations and Security"
-      duration_min: 50
+      duration_min: 35
       status: not_started
     - id: module-02
       title: "Assurance"
-      duration_min: 45
+      duration_min: 30
       status: not_started
     - id: module-03
       title: "Technology and Supply Chain"
-      duration_min: 40
+      duration_min: 30
       status: not_started
     - id: module-04
       title: "Data and AI"
-      duration_min: 20
+      duration_min: 10
       status: not_started
     - id: module-05
       title: "Supplementary Governance (Optional)"
@@ -85,7 +85,7 @@ spec:
       - "registry.access.redhat.com"
     gpu_nodes: 0                       # number of GPU nodes (0 = none)
     gpu_type: ""                       # e.g. NVIDIA A100 40GB (required if gpu_nodes > 0)
-  duration_hours: 3.25
+  duration_hours: 2.0
   audience: "advanced"         # beginner | intermediate | advanced
 
 development:

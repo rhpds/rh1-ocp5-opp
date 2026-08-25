@@ -8,7 +8,7 @@ This module establishes the multi-cluster sovereign cloud foundation. Students u
 
 - **Target personas:** Platform engineers, SREs managing multi-cluster fleets
 - **Prerequisites for this module:** Console access credentials delivered at lab start; background setup script (setup.sh) must have completed; familiarity with RHACM hub-and-spoke concepts
-- **Estimated duration:** 50 minutes
+- **Estimated duration:** 35 minutes
 
 ## Learning Objectives
 

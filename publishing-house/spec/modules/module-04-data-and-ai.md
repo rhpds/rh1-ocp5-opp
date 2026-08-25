@@ -8,7 +8,7 @@ This module positions on-premises AI as a sovereign alternative to cloud-hosted 
 
 - **Target personas:** Platform engineers and SREs evaluating on-premises AI; secondary audience of data scientists interested in sovereign deployment
 - **Prerequisites for this module:** RHOAI pre-deployed on the hub cluster with a DataScienceCluster CR in Ready state; student has RHOAI console access credentials; internet access to github.com for notebook clone (or pre-cloned by setup script)
-- **Estimated duration:** 20 minutes
+- **Estimated duration:** 10 minutes
 
 ## Learning Objectives
 
