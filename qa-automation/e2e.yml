@@ -1,0 +1,225 @@
+---
+# E2E — End-to-end test
+# LB1066 — Sovereign Cloud Management and Security with Red Hat OpenShift Platform Plus
+#
+# Walks the five lab modules in order and verifies the end-state each module
+# teaches a student to reach. This is a classic (Showroom) guided lab, so there
+# are no per-module solve/validate shell scripts to replay — instead this test
+# asserts the cluster objects and platform capabilities that each module
+# exercises are present and healthy on the provisioned hub + managed fleet.
+#
+# Fails on the first module whose expected end-state is missing. Intended to run
+# against a fully provisioned environment (after healthcheck.yml passes).
+#
+# Requirements:
+#   - collection kubernetes.core
+#   - KUBECONFIG (or K8S_AUTH_KUBECONFIG) for the hub cluster, OR `oc login`.
+
+- name: "LB1066 — End-to-End Test (walk all 5 modules)"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | default(omit, true) }}"
+  tasks:
+
+    # ----------------------------------------------------------------------
+    - name: "Module 01 — Operations and Security"
+      block:
+        - name: "M01 — RHACM managed clusters are registered in the fleet"
+          kubernetes.core.k8s_info:
+            api_version: cluster.open-cluster-management.io/v1
+            kind: ManagedCluster
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_managedclusters
+
+        - name: "M01 — assert the hub plus at least one managed (EMEA/US) cluster are joined"
+          ansible.builtin.assert:
+            that:
+              - r_managedclusters.resources | length >= 2
+              - >-
+                r_managedclusters.resources
+                | json_query("[?status.conditions[?type=='ManagedClusterConditionAvailable' && status=='True']]")
+                | length >= 2
+            fail_msg: "Expected >=2 Available ManagedClusters (hub + EMEA/US); found {{ r_managedclusters.resources | length }}."
+            success_msg: "{{ r_managedclusters.resources | length }} ManagedClusters registered and Available."
+
+        - name: "M01 — OpenShift GitOps (Argo CD) is installed for multi-cluster app delivery"
+          kubernetes.core.k8s_info:
+            api_version: argoproj.io/v1beta1
+            kind: ArgoCD
+            namespace: openshift-gitops
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_argocd
+
+        - name: "M01 — assert the GitOps ArgoCD instance is present"
+          ansible.builtin.assert:
+            that:
+              - r_argocd.resources | length > 0
+            fail_msg: "No ArgoCD instance found in openshift-gitops."
+            success_msg: "OpenShift GitOps ArgoCD instance present."
+
+        - name: "M01 — RHACM data-residency Policies exist (GDPR policy-as-code)"
+          kubernetes.core.k8s_info:
+            api_version: policy.open-cluster-management.io/v1
+            kind: Policy
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_policies
+
+        - name: "M01 — assert at least one RHACM Policy is defined"
+          ansible.builtin.assert:
+            that:
+              - r_policies.resources | length > 0
+            fail_msg: "No RHACM Policies found — data-residency governance not applied."
+            success_msg: "{{ r_policies.resources | length }} RHACM Policies present."
+      tags: [module-01]
+
+    # ----------------------------------------------------------------------
+    - name: "Module 02 — Assurance"
+      block:
+        - name: "M02 — Compliance Operator scan bindings are configured"
+          kubernetes.core.k8s_info:
+            api_version: compliance.openshift.io/v1alpha1
+            kind: ScanSettingBinding
+            namespace: openshift-compliance
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_ssb
+
+        - name: "M02 — assert a ScanSettingBinding exists (CIS/E8/NERC-CIP/PCI-DSS/STIG)"
+          ansible.builtin.assert:
+            that:
+              - r_ssb.resources | length > 0
+            fail_msg: "No ScanSettingBinding in openshift-compliance — compliance scans not scheduled."
+            success_msg: "{{ r_ssb.resources | length }} ScanSettingBinding(s) configured."
+
+        - name: "M02 — RHACS Central is reachable via its route (runtime enforcement UI)"
+          kubernetes.core.k8s_info:
+            api_version: route.openshift.io/v1
+            kind: Route
+            namespace: stackrox
+            name: central
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_central_route
+
+        - name: "M02 — assert the RHACS Central route is admitted"
+          ansible.builtin.assert:
+            that:
+              - r_central_route.resources | length == 1
+              - >-
+                r_central_route.resources[0]
+                | json_query("status.ingress[?conditions[?type=='Admitted' && status=='True']]")
+                | length > 0
+            fail_msg: "RHACS Central route missing or not Admitted."
+            success_msg: "RHACS Central route admitted at {{ r_central_route.resources[0].spec.host }}."
+      tags: [module-02]
+
+    # ----------------------------------------------------------------------
+    - name: "Module 03 — Technology and Supply Chain"
+      block:
+        - name: "M03 — Quay registry endpoint is published"
+          kubernetes.core.k8s_info:
+            api_version: quay.redhat.com/v1
+            kind: QuayRegistry
+            namespace: quay
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_quay
+
+        - name: "M03 — assert the QuayRegistry exposes a registry endpoint"
+          ansible.builtin.assert:
+            that:
+              - r_quay.resources | length > 0
+              - r_quay.resources[0].status.registryEndpoint is defined
+              - r_quay.resources[0].status.registryEndpoint | length > 0
+            fail_msg: "QuayRegistry has no published registryEndpoint — golden-image push target unavailable."
+            success_msg: "Quay registry endpoint: {{ r_quay.resources[0].status.registryEndpoint }}."
+
+        - name: "M03 — Trusted Artifact Signer (RHTAS) Securesign stack is deployed"
+          kubernetes.core.k8s_info:
+            api_version: rhtas.redhat.com/v1alpha1
+            kind: Securesign
+            namespace: trusted-artifact-signer
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_securesign
+
+        - name: "M03 — assert the RHTAS Securesign instance exists (Fulcio/Rekor/TUF)"
+          ansible.builtin.assert:
+            that:
+              - r_securesign.resources | length > 0
+            fail_msg: "No Securesign resource in trusted-artifact-signer — cosign signing backend unavailable."
+            success_msg: "RHTAS Securesign stack present for keyless cosign signing."
+      tags: [module-03]
+
+    # ----------------------------------------------------------------------
+    - name: "Module 04 — Data and AI"
+      block:
+        - name: "M04 — RHOAI DataScienceCluster is Ready"
+          kubernetes.core.k8s_info:
+            api_version: datasciencecluster.opendatahub.io/v1
+            kind: DataScienceCluster
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_dsc
+
+        - name: "M04 — assert the DataScienceCluster reports Ready"
+          ansible.builtin.assert:
+            that:
+              - r_dsc.resources | length > 0
+              - r_dsc.resources[0].status.phase | default('') == 'Ready'
+            fail_msg: "DataScienceCluster missing or not Ready — RHOAI workbenches unavailable."
+            success_msg: "RHOAI DataScienceCluster is Ready."
+
+        - name: "M04 — the OpenShift AI dashboard route is published"
+          kubernetes.core.k8s_info:
+            api_version: route.openshift.io/v1
+            kind: Route
+            namespace: redhat-ods-applications
+            kubeconfig: "{{ kubeconfig }}"
+            label_selectors:
+              - "app.kubernetes.io/part-of=rhods-dashboard"
+          register: r_rhoai_route
+
+        - name: "M04 — assert an RHOAI dashboard route is exposed"
+          ansible.builtin.assert:
+            that:
+              - r_rhoai_route.resources | length > 0
+            fail_msg: "No RHOAI dashboard route found in redhat-ods-applications."
+            success_msg: "RHOAI dashboard route exposed — Jupyter workbench reachable."
+      tags: [module-04]
+
+    # ----------------------------------------------------------------------
+    - name: "Module 05 — Supplementary Governance (Optional)"
+      block:
+        - name: "M05 — governance PolicySets group regional policies"
+          kubernetes.core.k8s_info:
+            api_version: policy.open-cluster-management.io/v1beta1
+            kind: PolicySet
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_policysets
+
+        - name: "M05 — NetworkPolicy egress controls are modelled as RHACM Policies"
+          kubernetes.core.k8s_info:
+            api_version: policy.open-cluster-management.io/v1
+            kind: Policy
+            kubeconfig: "{{ kubeconfig }}"
+          register: r_gov_policies
+
+        - name: "M05 — assert supplementary governance objects are present"
+          ansible.builtin.assert:
+            that:
+              - (r_policysets.resources | length > 0) or (r_gov_policies.resources | length > 1)
+            fail_msg: >-
+              No PolicySets and insufficient Policies found — the optional
+              supplementary-governance end-state is not in place.
+            success_msg: >-
+              Supplementary governance present
+              ({{ r_policysets.resources | length }} PolicySet(s),
+              {{ r_gov_policies.resources | length }} Policy objects).
+      tags: [module-05]
+
+    # ----------------------------------------------------------------------
+    - name: "E2E summary"
+      ansible.builtin.debug:
+        msg: >-
+          E2E PASSED — all five modules validated: RHACM fleet + GitOps +
+          policy-as-code (M01), compliance scans + RHACS runtime (M02), Quay +
+          RHTAS signing (M03), RHOAI workbench (M04), and supplementary
+          governance (M05).

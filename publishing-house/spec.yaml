@@ -16,11 +16,11 @@ project:
   automation_type: "both"
   description: "This hands-on OpenShift Platform Plus (OPP) lab environment offers a complete enterprise architecture for building, securing, and operating multi-cluster Kubernetes fleets at scale. Built on a hub-and-spoke model using Red Hat OpenShift Container Platform, the lab integrates the full OPP suite—utilizing Red Hat Advanced Cluster Management (RHACM) for global fleet governance and GitOps automation, Red Hat Advanced Cluster Security (RHACS) for continuous DevSecOps compliance and runtime threat detection, Red Hat Quay for enterprise-grade container registry management, and Red Hat OpenShift Data Foundation (ODF) for unified software-defined storage. Through practical, real-world scenarios, platform engineers, DevSecOps specialists, and SREs gain direct experience enforcing zero-trust security policies, automating multi-cluster observability, and managing resilient stateful workloads across hybrid cloud environments."
   # content_reviewer_email and infra_reviewer_email are assigned by the RHDP team — not set by the author
-  jira_ticket: "RHDPCD-1146"
+  jira_ticket: "RHDPCD-1148"
   workflow_id: "d02c43ac-917e-4f3c-ba06-a85ea5bcea62"
 
 spec:
-  title: "LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data Residency and Compliance Management"
+  title: "LB1066 - Sovereign Cloud Management and Security with Red Hat OpenShift Platform Plus"
   learning_objectives:
     - "Deploy a Hosted Control Plane (HCP) cluster in an EMEA region using Red Hat Advanced Cluster Management and verify it is registered in the fleet inventory"
     - "Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster"
@@ -34,23 +34,23 @@ spec:
     - id: module-01
       title: "Operations and Security"
       duration_min: 35
-      status: not_started
+      status: complete
     - id: module-02
       title: "Assurance"
       duration_min: 30
-      status: not_started
+      status: complete
     - id: module-03
       title: "Technology and Supply Chain"
       duration_min: 30
-      status: not_started
+      status: complete
     - id: module-04
       title: "Data and AI"
       duration_min: 10
-      status: not_started
+      status: complete
     - id: module-05
       title: "Supplementary Governance (Optional)"
       duration_min: 25
-      status: not_started
+      status: complete
   environment:
     platform: "ocp"            # ocp | rhel-vms — determines which sizing fields apply
     topology: "per-student"    # shared-cluster | per-student | cnv-pool
@@ -95,9 +95,9 @@ development:
     ansible:
       status: not_started
   e2e:
-    status: not_started
+    status: in_progress
   healthCheck:
-    status: not_started
+    status: in_progress
 
 compliance:
   last_hard_check: null
@@ -163,6 +163,6 @@ approval_checklist:
     peak_environments: null
     cost_per_run_est: ""
     provisioning_time_est: ""
-    agnosticv_base_ci: ""
+    agnosticv_base_ci: "rh1-2027/lb1066-rh1-ocp5-opp"
     approved_by: ""
     rejections: []

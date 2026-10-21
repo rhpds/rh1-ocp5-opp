@@ -1,0 +1,184 @@
+---
+# HEALTHCHECK — Quick environment readiness check
+# LB1066 — Sovereign Cloud Management and Security with Red Hat OpenShift Platform Plus
+#
+# Runs post-provisioning to verify the lab environment is functional before a
+# student is handed the cluster. Non-destructive: reads cluster state only.
+# Should complete in well under 60 seconds.
+#
+# Exit 0 = healthy, non-zero = unhealthy.
+#
+# Requirements:
+#   - collection kubernetes.core
+#   - KUBECONFIG (or K8S_AUTH_KUBECONFIG) pointing at the hub cluster, OR an
+#     active `oc login` session the kubernetes.core modules can reuse.
+
+- name: "LB1066 — Environment Health Check"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') | default(omit, true) }}"
+
+    # OPP operator stack this lab provisions on the hub cluster.
+    # Each entry is verified two ways: the operator's ClusterServiceVersion must
+    # be Succeeded, and (where defined) its primary custom resource must exist.
+    opp_operators:
+      - name: "Red Hat Advanced Cluster Management (RHACM)"
+        csv_namespace: "open-cluster-management"
+        csv_prefix: "advanced-cluster-management"
+        cr_api_version: "operator.open-cluster-management.io/v1"
+        cr_kind: "MultiClusterHub"
+        cr_namespace: "open-cluster-management"
+        cr_ready_jsonpath: "status.phase"
+        cr_ready_value: "Running"
+      - name: "Red Hat Advanced Cluster Security (RHACS / StackRox)"
+        csv_namespace: "rhacs-operator"
+        csv_prefix: "rhacs-operator"
+        cr_api_version: "platform.stackrox.io/v1alpha1"
+        cr_kind: "Central"
+        cr_namespace: "stackrox"
+        cr_ready_jsonpath: ""
+        cr_ready_value: ""
+      - name: "Red Hat Quay"
+        csv_namespace: "quay"
+        csv_prefix: "quay-operator"
+        cr_api_version: "quay.redhat.com/v1"
+        cr_kind: "QuayRegistry"
+        cr_namespace: "quay"
+        cr_ready_jsonpath: ""
+        cr_ready_value: ""
+      - name: "Red Hat OpenShift Data Foundation (ODF)"
+        csv_namespace: "openshift-storage"
+        csv_prefix: "odf-operator"
+        cr_api_version: "ocs.openshift.io/v1"
+        cr_kind: "StorageCluster"
+        cr_namespace: "openshift-storage"
+        cr_ready_jsonpath: "status.phase"
+        cr_ready_value: "Ready"
+      - name: "Red Hat OpenShift AI (RHOAI)"
+        csv_namespace: "redhat-ods-operator"
+        csv_prefix: "rhods-operator"
+        cr_api_version: "datasciencecluster.opendatahub.io/v1"
+        cr_kind: "DataScienceCluster"
+        cr_namespace: ""
+        cr_ready_jsonpath: "status.phase"
+        cr_ready_value: "Ready"
+
+  tasks:
+    - name: "Preflight — a kubeconfig or oc session must be available"
+      ansible.builtin.assert:
+        that:
+          - (lookup('ansible.builtin.env', 'KUBECONFIG') | length > 0)
+            or (lookup('ansible.builtin.env', 'K8S_AUTH_KUBECONFIG') | length > 0)
+            or (lookup('ansible.builtin.env', 'K8S_AUTH_HOST') | length > 0)
+        fail_msg: >-
+          No cluster credentials found. Set KUBECONFIG (or K8S_AUTH_KUBECONFIG)
+          or log in with `oc login` before running the health check.
+        success_msg: "Cluster credentials present."
+
+    - name: "OCP API — fetch cluster version"
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: ClusterVersion
+        name: version
+        kubeconfig: "{{ kubeconfig }}"
+      register: r_clusterversion
+
+    - name: "OCP API — assert the cluster version reports Available"
+      ansible.builtin.assert:
+        that:
+          - r_clusterversion.resources | length == 1
+          - >-
+            r_clusterversion.resources[0].status.conditions
+            | selectattr('type', 'equalto', 'Available')
+            | selectattr('status', 'equalto', 'True')
+            | list | length == 1
+        fail_msg: "Cluster API is unreachable or ClusterVersion is not Available."
+        success_msg: >-
+          OCP {{ r_clusterversion.resources[0].status.desired.version
+          | default('unknown') }} API reachable and Available.
+
+    - name: "OCP API — list cluster operators that are not Available or still Degraded"
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: ClusterOperator
+        kubeconfig: "{{ kubeconfig }}"
+      register: r_clusteroperators
+
+    - name: "OCP API — assert no ClusterOperator is Degraded"
+      vars:
+        _degraded: >-
+          {{ r_clusteroperators.resources
+             | selectattr('status.conditions', 'defined')
+             | selectattr('status.conditions', 'search', 'Degraded')
+             | map(attribute='metadata.name') | list }}
+        _degraded_true: >-
+          {{ r_clusteroperators.resources
+             | json_query("[?status.conditions[?type=='Degraded' && status=='True']].metadata.name") }}
+      ansible.builtin.assert:
+        that:
+          - _degraded_true | length == 0
+        fail_msg: "Degraded cluster operators: {{ _degraded_true | join(', ') }}"
+        success_msg: "All {{ r_clusteroperators.resources | length }} cluster operators are healthy."
+
+    - name: "OPP operators — verify each ClusterServiceVersion is Succeeded"
+      kubernetes.core.k8s_info:
+        api_version: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        namespace: "{{ item.csv_namespace }}"
+        kubeconfig: "{{ kubeconfig }}"
+      register: r_csvs
+      loop: "{{ opp_operators }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: "OPP operators — assert a Succeeded CSV exists for each operator"
+      ansible.builtin.assert:
+        that:
+          - >-
+            item.0.resources
+            | selectattr('metadata.name', 'match', '^' ~ item.1.csv_prefix)
+            | selectattr('status.phase', 'defined')
+            | selectattr('status.phase', 'equalto', 'Succeeded')
+            | list | length > 0
+        fail_msg: >-
+          {{ item.1.name }} has no Succeeded ClusterServiceVersion matching
+          '{{ item.1.csv_prefix }}' in namespace '{{ item.1.csv_namespace }}'.
+        success_msg: "{{ item.1.name }} operator is installed and Succeeded."
+      loop: "{{ r_csvs.results | zip(opp_operators) | list }}"
+      loop_control:
+        label: "{{ item.1.name }}"
+
+    - name: "OPP operators — fetch each operator's primary custom resource"
+      kubernetes.core.k8s_info:
+        api_version: "{{ item.cr_api_version }}"
+        kind: "{{ item.cr_kind }}"
+        namespace: "{{ item.cr_namespace | default(omit, true) }}"
+        kubeconfig: "{{ kubeconfig }}"
+      register: r_crs
+      loop: "{{ opp_operators }}"
+      loop_control:
+        label: "{{ item.name }} ({{ item.cr_kind }})"
+
+    - name: "OPP operators — assert each primary custom resource exists and is ready"
+      ansible.builtin.assert:
+        that:
+          - item.0.resources | length > 0
+          - >-
+            (item.1.cr_ready_jsonpath | length == 0)
+            or (item.0.resources[0] | json_query(item.1.cr_ready_jsonpath) == item.1.cr_ready_value)
+        fail_msg: >-
+          {{ item.1.name }}: expected a {{ item.1.cr_kind }}
+          {% if item.1.cr_ready_jsonpath | length > 0 %}with {{ item.1.cr_ready_jsonpath }}={{ item.1.cr_ready_value }}{% endif %}
+          but found {{ item.0.resources | length }} resource(s).
+        success_msg: "{{ item.1.name }}: {{ item.1.cr_kind }} present and ready."
+      loop: "{{ r_crs.results | zip(opp_operators) | list }}"
+      loop_control:
+        label: "{{ item.1.name }}"
+
+    - name: "Health check summary"
+      ansible.builtin.debug:
+        msg: >-
+          Environment healthy — OCP API reachable, cluster operators stable, and
+          the OPP stack (RHACM, RHACS, Quay, ODF, RHOAI) is installed and ready.
