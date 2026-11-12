@@ -9,7 +9,10 @@ asciidoc:
     # page-toclevels: -1               # <- This will remove the TOC that appear in the right sidebar at wider resolutions
     lab_name: LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data Residency and Compliance Management
     release-version: master
+    experimental: true
     page-pagination: true
+    guid: '%GUID%'
+    openshift_console_url: 'https://console-openshift-console.%DOMAIN%'
     page-links:
     - url: https://redhat.com
       text: Red Hat
