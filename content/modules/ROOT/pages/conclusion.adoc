@@ -9,14 +9,22 @@ Congratulations on completing this lab! You have worked through a hands-on sover
 
 Throughout this lab, you:
 
+=== Virtualization
+
 * Created and managed multi-environment OpenShift clusters using Red Hat Advanced Cluster Management (RHACM), including deploying a Hosted Control Plane cluster in an EMEA region
 * Deployed and managed virtual machines alongside containers from a single unified console
+
+=== AI Adoption
+
+* Deployed Red Hat OpenShift AI and ran Jupyter notebooks to demonstrate sovereign AI capabilities
+
+=== Security and Sovereignty
+
 * Used OpenShift GitOps with Argo CD to declaratively deploy applications across multiple clusters in different geographic regions
 * Defined and enforced compliance policies as code for both GDPR (EMEA) and NIST 800-53 (US) frameworks
 * Configured compliance scanning with RHACS across regional clusters and reviewed audit results
 * Enforced runtime security policies to detect and block anomalous behavior in production containers
 * Built, signed, and verified container images using cosign and Red Hat Trusted Artifact Signer
-* Deployed Red Hat OpenShift AI and ran Jupyter notebooks to demonstrate sovereign AI capabilities
 
 [[key-takeaways]]
 == Key Takeaways

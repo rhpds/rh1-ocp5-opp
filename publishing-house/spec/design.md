@@ -20,13 +20,13 @@ This lab delivers hands-on experience designing and operating a sovereign cloud 
 ## Learning Objectives
 
 1. Deploy a Hosted Control Plane (HCP) cluster in an EMEA region using Red Hat Advanced Cluster Management and verify it is registered in the fleet inventory
-2. Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster
+2. Deploy a Jupyter workbench on Red Hat OpenShift AI and execute a data science notebook on CPU-only infrastructure as a sovereign alternative to cloud AI services
 3. Deploy containerized workloads across three clusters using Red Hat OpenShift GitOps (Argo CD) ApplicationSets
-4. Configure multi-profile compliance scans (CIS, Essential 8, NERC-CIP, PCI-DSS, STIG) across clusters using RHACS and the Compliance Operator
-5. Observe and verify real-time runtime security enforcement by triggering a RHACS policy violation and confirming pod termination
-6. Build a container image from a Red Hat UBI golden base image and push it to a private Red Hat Quay registry
-7. Sign container images using cosign backed by Red Hat Trusted Artifact Signer (Fulcio CA, Rekor transparency log, TUF) with OIDC identity verification
-8. Deploy a Jupyter workbench on Red Hat OpenShift AI and execute a data science notebook on CPU-only infrastructure as a sovereign alternative to cloud AI services
+4. Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster
+5. Configure multi-profile compliance scans (CIS, Essential 8, NERC-CIP, PCI-DSS, STIG) across clusters using RHACS and the Compliance Operator
+6. Observe and verify real-time runtime security enforcement by triggering a RHACS policy violation and confirming pod termination
+7. Build a container image from a Red Hat UBI golden base image and push it to a private Red Hat Quay registry
+8. Sign container images using cosign backed by Red Hat Trusted Artifact Signer (Fulcio CA, Rekor transparency log, TUF) with OIDC identity verification
 
 ## Content Type
 
@@ -57,16 +57,17 @@ Open source and community:
 
 ## Module Map
 
+The same exercises are grouped into three modules. Virtualization stands up the EMEA Hosted Control Plane and a RHEL virtual machine. AI Adoption is the OpenShift AI workbench. Security and Sovereignty holds GitOps placement, RHACM policy, RHACS assurance, image signing, and the optional regional governance exercises.
+
 | Module | Title | Duration |
 |--------|-------|----------|
 | Intro | Introduction and Setup | 10 min |
-| 1 | Operations and Security | 35 min |
-| 2 | Assurance | 30 min |
-| 3 | Technology and Supply Chain | 30 min |
-| 4 | Data and AI | 10 min |
+| 1 | Virtualization | 25 min |
+| 2 | AI Adoption | 10 min |
+| 3 | Security and Sovereignty | 70 min |
 | — | Conclusion | 5 min |
 | — | **Total lab** | **~2 h** |
-| 5 | Supplementary Governance (Optional) | +25 min |
+| 3 (optional sections) | Supplementary governance at the end of Module 3 | +25 min |
 
 ## Difficulty Level
 
@@ -74,7 +75,7 @@ Advanced
 
 ## Environment
 
-**Learner view:** The lab starts with two pre-provisioned OpenShift clusters: a hub cluster (local-cluster) running RHACM, RHACS, Red Hat Quay, Red Hat OpenShift AI, and Red Hat Trusted Artifact Signer, and a managed cluster (aws-us) registered in the RHACM fleet. A background setup script (setup.sh) runs at lab start to prepare application manifests and credentials. Participants receive console access credentials for OpenShift, RHACS, Quay, RHOAI, and a terminal. During Module 1, participants create a third cluster (HCP/EMEA) via the RHACM console. One pre-deployed RHEL VM (rhel-webserver) exists on the hub cluster; participants create an additional RHEL VM (rhel9-lab-vm) during the lab.
+**Learner view:** The lab starts with two pre-provisioned OpenShift clusters: a hub cluster (local-cluster) running RHACM, RHACS, Red Hat Quay, Red Hat OpenShift AI, and Red Hat Trusted Artifact Signer, and a managed cluster (aws-us) registered in the RHACM fleet. A background setup script (setup.sh) runs at lab start to prepare application manifests and credentials. Participants receive console access credentials for OpenShift, RHACS, Quay, RHOAI, and a terminal. During Module 1 (Virtualization), participants create a third cluster (HCP/EMEA) via the RHACM console. One pre-deployed RHEL VM (rhel-webserver) exists on the hub cluster; participants create an additional RHEL VM (rhel9-lab-vm) during the lab. Module 2 (AI Adoption) uses the pre-deployed OpenShift AI dashboard and does not wait on the EMEA cluster. Module 3 (Security and Sovereignty) deploys the patient-portal application, applies RHACM policy and RHACS controls, and signs an image. Optional governance sections are at the end of Module 3.
 
 **Automation needed:** Yes — a setup script provisions initial lab state (application repos, credential injection, RHTAS stack initialization). Background automation pre-deploys operators and platform services (RHACM, RHACS, Quay, RHOAI, RHTAS, OpenShift Virtualization) on the hub cluster before the lab session begins.
 

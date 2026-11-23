@@ -23,33 +23,25 @@ spec:
   title: "LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data Residency and Compliance Management"
   learning_objectives:
     - "Deploy a Hosted Control Plane (HCP) cluster in an EMEA region using Red Hat Advanced Cluster Management and verify it is registered in the fleet inventory"
-    - "Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster"
+    - "Deploy a Jupyter workbench on Red Hat OpenShift AI and execute a data science notebook on CPU-only infrastructure as a sovereign alternative to cloud AI services"
     - "Deploy containerized workloads across three clusters using Red Hat OpenShift GitOps (Argo CD) ApplicationSets"
+    - "Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster"
     - "Configure multi-profile compliance scans (CIS, Essential 8, NERC-CIP, PCI-DSS, STIG) across clusters using RHACS and the Compliance Operator"
     - "Observe and verify real-time runtime security enforcement by triggering a RHACS policy violation and confirming pod termination"
     - "Build a container image from a Red Hat UBI golden base image and push it to a private Red Hat Quay registry"
     - "Sign container images using cosign backed by Red Hat Trusted Artifact Signer (Fulcio CA, Rekor transparency log, TUF) with OIDC identity verification"
-    - "Deploy a Jupyter workbench on Red Hat OpenShift AI and execute a data science notebook on CPU-only infrastructure as a sovereign alternative to cloud AI services"
   modules:
     - id: module-01
-      title: "Operations and Security"
-      duration_min: 35
+      title: "Virtualization"
+      duration_min: 25
       status: in_progress
     - id: module-02
-      title: "Assurance"
-      duration_min: 30
-      status: in_progress
-    - id: module-03
-      title: "Technology and Supply Chain"
-      duration_min: 30
-      status: in_progress
-    - id: module-04
-      title: "Data and AI"
+      title: "AI Adoption"
       duration_min: 10
       status: in_progress
-    - id: module-05
-      title: "Supplementary Governance (Optional)"
-      duration_min: 25
+    - id: module-03
+      title: "Security and Sovereignty"
+      duration_min: 70
       status: in_progress
   environment:
     platform: "ocp"            # ocp | rhel-vms — determines which sizing fields apply
@@ -114,18 +106,14 @@ approval_checklist:
     prerequisites_verifiable: false
     assessment_strategy: ""
     catalog_gap: ""
-    design_overview: "This advanced lab covers sovereign cloud architecture using the full Red Hat OpenShift Platform Plus suite across a three-cluster fleet (hub, EMEA HCP, and US managed cluster). Students enforce data residency and regulatory compliance through RHACM policy-as-code, demonstrate runtime security enforcement with RHACS, secure the software supply chain by signing container images with RHTAS/cosign, and deploy an on-premises AI workbench with RHOAI — all without reliance on external cloud provider services."
+    design_overview: "This advanced lab covers sovereign cloud architecture using the full Red Hat OpenShift Platform Plus suite across a three-cluster fleet (hub, EMEA HCP, and US managed cluster). Content is organized into three modules: Virtualization, AI Adoption, and Security and Sovereignty. Students enforce data residency and regulatory compliance through RHACM policy-as-code, demonstrate runtime security enforcement with RHACS, secure the software supply chain by signing container images with RHTAS/cosign, and deploy an on-premises AI workbench with RHOAI — all without reliance on external cloud provider services. Former supplementary governance exercises remain in the lab as optional sections at the end of Module 3."
     module_summaries:
-      - title: "Operations and Security"
-        overview: "Students create an HCP/EMEA cluster via RHACM, deploy RHEL VMs through Fleet Virtualization, deploy the skupper-patient-demo application across three clusters using Argo CD ApplicationSets, and enforce GDPR data residency policies via RHACM policy-as-code targeting the EMEA cluster."
-      - title: "Assurance"
-        overview: "Students configure allowed registry settings to pass an E8 compliance check, schedule multi-profile compliance scans (CIS, E8, NERC-CIP, PCI-DSS, STIG) across all clusters with RHACS and the Compliance Operator, observe real-time runtime enforcement as RHACS kills a pod invoking the Alpine package manager, and review violations reports as audit evidence."
-      - title: "Technology and Supply Chain"
-        overview: "Students pull a Red Hat UBI Python image into a private Quay registry as a golden base image, rebuild the patient-portal frontend from that base using podman, then cryptographically sign the image with cosign backed by the in-cluster RHTAS stack (Fulcio CA, Rekor transparency log, TUF) using OIDC identity via Keycloak."
-      - title: "Data and AI"
+      - title: "Virtualization"
+        overview: "Students create an HCP/EMEA cluster via RHACM on OpenShift Virtualization and deploy a RHEL virtual machine through Fleet Virtualization. The EMEA cluster continues provisioning while students move on."
+      - title: "AI Adoption"
         overview: "Students explore the RHOAI dashboard, launch a CPU-based Python 3.12 Jupyter workbench, and execute a student performance prediction notebook — demonstrating end-to-end AI inference within a self-managed sovereign cluster without GPU accelerators or external AI API dependencies."
-      - title: "Supplementary Governance (Optional)"
-        overview: "Students extend RHACM governance with a NetworkPolicy egress block for GDPR namespaces on the EMEA cluster, apply NIST SP 800-53 namespace compliance and API audit logging policies to the US cluster, and organize all regional policies into PolicySets for a structured governance dashboard view."
+      - title: "Security and Sovereignty"
+        overview: "Students deploy the skupper-patient-demo application across three clusters using Argo CD ApplicationSets, enforce GDPR data residency policies on the EMEA cluster, configure allowed registries and multi-profile compliance scans (CIS, E8, NERC-CIP, PCI-DSS, STIG) with RHACS, observe runtime enforcement as RHACS kills a pod invoking the Alpine package manager, rebuild the patient-portal frontend from a UBI golden image in Quay, and sign it with cosign and the in-cluster RHTAS stack. Optional sections add an EMEA NetworkPolicy egress block, NIST SP 800-53 policies on the US cluster, and PolicySets grouped by geography."
     rcars_overlap_pct: 83
     rcars_top_matches:
       - title: "Hands-on lab with Red Hat OpenShift Platform Plus (2025)"

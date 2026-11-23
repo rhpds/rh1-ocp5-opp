@@ -1,0 +1,189 @@
+[[virtualization]]
+
+= Virtualization
+
+In this module you create an EMEA Hosted Control Plane and a RHEL virtual machine from Red Hat Advanced Cluster Management. Application placement, compliance, and image signing are in Module 3.
+
+**Operational and Security Sovereignty** means ensuring your organization can operate technology independently and autonomously, with complete control over your data, infrastructure, and security information. 
+
+This requires a flexible platform that can be used to deploy and manage your clusters, containers, virtual machines, and AI applications, while providing hardened authorization, authentication, data controls, encryption, vulnerability management, and more.
+
+[[multi-env-clusters]]
+== Multi-Environment Red Hat OpenShift Cluster and Virtual Machine Creation and Management
+
+Creating and managing clusters is the first step in building a sovereign cloud. When you control your clusters -- from setup to daily operations -- you decide where your workloads and data live, set your own policies, and stay compliant. This way, you can quickly adapt to regulations, keep your business flexible, and avoid relying on outside providers. With flexible management of clusters and virtual machines, you can build a cloud that fits your security and compliance needs from the start.
+
+[[hub-cluster-overview]]
+=== RHACM Management Cluster Overview
+
+Red Hat Advanced Cluster Management (RHACM) serves as the central control plane of your sovereign cloud environment for managing your entire fleet of OpenShift clusters. It provides a single point of authority and unified interface for cluster lifecycle management, policy enforcement, application deployment, and observability across multiple environments.
+
+=== Create and Manage Kubernetes Clusters
+
+Red Hat Advanced Cluster Management for Kubernetes (RHACM) simplifies the deployment and management of new OpenShift clusters. Strategies such as IPI and the Assisted Installer are available, but RHACM takes it a step further, allowing you to deploy new clusters with just a few clicks using the cluster creation wizard.
+
+*For the first exercise, you will deploy a new cluster in the EMEA region so that you will have local, US and EMEA clusters to deploy your applications to.*
+
+.Procedure
+. On the top left of the OpenShift Console, click the "Hamburger" drop down and select *Fleet Management* -> *Infrastructure* -> *Clusters*
++
+image::08-dropdown-menu.png[link=self, window=blank, width=100%, Create VM]
++
+[NOTE]
+====
+If you don't see the dropdown your window is not wide enough - just click the "hamburger menu" (the three dashes) to reveal the side menu.
+====
++
+. Next, click on the *Create cluster* button in the center of the screen:
++
+image::103-create-cluster.png[link=self, window=blank, width=100%, Create Cluster]
++
+. Click on the *Red Hat OpenShift Virtualization* button. You will see one option for the control plane type: *Hosted*
++
+image::104-aws-credentials.png[link=self, window=blank, width=100%, AWS Credentials]
++
+NOTE: You'll notice that the only option already highlighted is Red Hat OpenShift Virtualization, indicating that your credentials are saved for the purpose of speeding up this lab.
++
+. Click on the *Hosted* option.
+. Leave the *Infrastructure provider credential* as *hcp*.
+. Name your cluster *hcp-emea*
++
+[source,sh,subs="attributes",role=execute]
+----
+hcp-emea
+----
++
+. Verify that is on the *clusters* space for the hosted cluster namespace
+. Select *managed* for the `Cluster Set`
+. Next, select the release image *OpenShift 4.21.0* (or whatever the current 4.21.x release image is).
+. Select *Single replica* for both the *Controller availability policy* and the *Infrastructure availability policy*.
+. Under Additional Labels enter *location=emea*
++
+[source,sh,subs="attributes",role=execute]
+----
+location=emea
+----
++
+[NOTE]
+====
+Single replica means components are not expected to be resilient to problems across most fault boundaries associated with high availability. This usually means running critical workloads with just 1 replica and with toleration of full disruption of the component.
+====
++
+. Click on *Next* to continue.
++
+image::105-create-cluster-details.png[link=self, window=blank, width=100%, Create Cluster Details]
++
+====
+*On the next screen you can customize the name for the node pools, the amount of pool replicas, cores and memory.*
+====
++
+. Enter the name `hcp-emea` for the *Node pool name* and leave the other details as default.
++
+[source,sh,subs="attributes",role=execute]
+----
+hcp-emea
+----
++
+. Click on *Next* to proceed.
++
+image::106-create-cluster-nodepools.png[link=self, window=blank, width=100%, Create Cluster NodePools]
++
+[NOTE]
+====
+The next screen allows you to configure storage mappings type to use and its associated variables. We will leave these as default as these have already been configured on the backend and you do not need to change them.
+====
++
+. Click on *Next* to proceed.
++
+image::107-create-cluster-networking.png[link=self, window=blank, width=100%, Create Cluster Networking]
++
+====
+*Once you are on the final Review section you will see a description of the cluster you are creating.*
+====
++
+. Click the blue *Create* button to start the deployment process.
++
+image::108-create-cluster-summary-create.png[link=self, window=blank, width=100%, Create Cluster Summary Page]
+
+[start=18]
+. Sit back and watch RHACM do its thing. You should see the Cluster creation process starting in the UI.
++
+image::03-cluster-creation.png[link=self, window=blank, width=100%, View New Cluster]
++
+NOTE: Deploying this Hosted Control Plane (HCP) cluster will take about 5 to 10 minutes. Please continue the lab while waiting for this cluster to provision, we will use it later on.
+
+[[multi-env-workloads]]
+
+== Multi-environment Workload Creation, Management, and Observability
+
+*Sovereign cloud operations require that organizations retain full control over where and how their containers and virtual machines run.*
+
+RHACM empowers you to deploy, manage, and observe all workloads -- VMs, containers, and AI/ML -- centrally with policy-driven governance and compliance across the hybrid cloud.
+
+[[create-manage-vms]]
+
+== Create and Manage Virtual Machines Using the RHACM Console
+
+Red Hat Advanced Cluster Management (RHACM) with OpenShift Virtualization provides unified, policy-as-code driven control of clusters and VMs from a single console. It lets you label resources, enforce placement, and automate compliance -- removing the need to jump between different management tools and ensuring consistent controls across all workloads.
+
+By the end of this exercise, you will:
+
+* Navigate the RHACM Search interface to locate Virtual Machine resources across the entire fleet.
+* Provision a new Virtual Machine using the RHACM Creation Wizard.
+* Perform Day 2 operations (Stop, Start, Migrate) directly from the multi-cluster view.
+
+NOTE: You might noticed that we have already deployed a Virtual Machine for you called *rhel-webserver* we will use this machine in later exercises do not delete or power off as it will affect the other modules. 
+
+=== Deploy Virtual Machines Using the RHACM Console
+
+.Procedure
+. Using the Hamburger menu select the dropdown and click on select *Fleet Virtualization*
++
+image::08-dropdown-menu.png[link=self, window=blank, width=100%, Create VM]
++
+. Click the *Create* dropdown and select *From template*
++
+image::09-create-menu.png[link=self, window=blank, width=100%, Create VM]
+
+. Under default template select *Red Hat Enterprise Linux 9 VM*
++
+image::10-template-menu.png[link=self, window=blank, width=100%, Create VM]
++
+NOTE: Notice all of the available templates to use, Windows VMs are fully supported as well.
+
+. Under Virtual machine name, enter the following and leave all other options as default (Disk size, Disk Source):
++
+[source,sh,role=execute]
+----
+rhel9-lab-vm
+----
++
+[CAUTION]
+====
+Please notice all of the available options to configure the VM with, these will change depending on your operating system
+====
++
+. Click *Quick create Virtual Machine* and watch for progress, this should take a couple of minutes to complete.
+
+. Once completed you will see the live console as well as stats about your VM.
++
+image::12-vm-finish.png[link=self, window=blank, width=100%, Create VM]
+
+[TIP]
+====
+*UI or GitOps -- The Choice is Yours!*
+
+While this lab demonstrates the graphical capabilities of the RHACM console, Virtual Machines in OpenShift are fundamentally Kubernetes objects. You can define your VMs as code using YAML and deploy them using Red Hat OpenShift GitOps (ArgoCD). RHACM supports both workflows: use the UI for quick administration and discovery, or use GitOps for a fully declarative, audit-ready production pipeline. In sovereign cloud environments, GitOps workflows provide version-controlled infrastructure that meets compliance requirements and audit trails for regulatory demonstrations.
+====
+
+[[virtualization-takeaways]]
+== Virtualization Takeaways
+
+* **Centralized cluster management** -- Use RHACM to create, label, and manage OpenShift clusters across multiple regions from one place.
+
+* **Unified workload management** -- Operate virtual machines and containers together, with full visibility across clusters.
+
+[.text-center]
+image::https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHNuaGJoenozbDg5dnZ6eXNwbmluazg2MDM3c2doMHRybnV0YnJ6bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VhWVAa7rUtT3xKX6Cd/giphy.gif[Celebration, width=400, link=self, window=blank]
+
+Proceed to xref:module-02-ai-adoption.adoc[Module 2: AI Adoption]. The EMEA cluster keeps provisioning in the background. You will use it in Module 3.

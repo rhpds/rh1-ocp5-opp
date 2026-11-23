@@ -35,13 +35,11 @@ Before beginning this lab, you should have:
 [[lab-modules]]
 == Lab Modules
 
-This lab is organized into five modules:
+This lab is organized into three modules:
 
-* xref:module-01.adoc[Module 1: Operations and Security] - Multi-environment cluster and workload management
-* xref:module-02.adoc[Module 2: Assurance] - Cluster conformance, compliance, and security insights
-* xref:module-03.adoc[Module 3: Technology and Supply Chain] - Secure supply chain and SLSA framework
-* xref:module-04.adoc[Module 4: Data and AI] - Data pipelines and AI compute capabilities
-* xref:module-05.adoc[Module 5: Supplementary modules] - Optional extra hands-on material
+* xref:module-01-virtualization.adoc[Module 1: Virtualization] - Multi-environment clusters and virtual machines
+* xref:module-02-ai-adoption.adoc[Module 2: AI Adoption] - On-cluster AI with OpenShift AI and Jupyter
+* xref:module-03-security-and-sovereignty.adoc[Module 3: Security and Sovereignty] - GitOps placement, policy-as-code, RHACS assurance, image signing, and optional regional governance
 * xref:conclusion.adoc[Conclusion] - Summary, key takeaways, and next steps
 
 [[getting-started]]

@@ -1,6 +1,6 @@
-[[data-ai]]
+[[ai-adoption]]
 
-= Data and AI
+= AI Adoption
 
 [[sovereign-ai-overview]]
 
@@ -118,3 +118,4 @@ With this setup, your sensitive data stays private, your models are secure, and 
 
 image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MzBvNTN6eWR3MHF0eWNoZTI0eTVvMmRrZTMzaW4xbGIwOXJhZTJwMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kAUtsLfsEfqaJRwe80/giphy.gif[Celebration, width=400, link=self, window=blank]
 
+Proceed to xref:module-03-security-and-sovereignty.adoc[Module 3: Security and Sovereignty].
