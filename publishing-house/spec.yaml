@@ -20,7 +20,7 @@ project:
   workflow_id: "d02c43ac-917e-4f3c-ba06-a85ea5bcea62"
 
 spec:
-  title: "LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data Residency and Compliance Management"
+  title: "LB1066: OpenShift 5 for Virtualization, AI, and Sovereignty"
   learning_objectives:
     - "Deploy a Hosted Control Plane (HCP) cluster in an EMEA region using Red Hat Advanced Cluster Management and verify it is registered in the fleet inventory"
     - "Deploy a Jupyter workbench on Red Hat OpenShift AI and execute a data science notebook on CPU-only infrastructure as a sovereign alternative to cloud AI services"

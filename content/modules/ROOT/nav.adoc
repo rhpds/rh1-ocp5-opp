@@ -1,4 +1,4 @@
-* xref:index.adoc[Intro - Sovereign Cloud Architecture]
+* xref:index.adoc[Intro - OpenShift 5 Virtualization and AI]
 ** xref:index.adoc#introduction[Introduction]
 ** xref:index.adoc#what-youll-learn[What You Will Learn]
 ** xref:index.adoc#prerequisites[Prerequisites]

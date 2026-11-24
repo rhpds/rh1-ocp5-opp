@@ -1,5 +1,4 @@
-site_name: LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data
-  Residency and Compliance Management
+site_name: "LB1066: OpenShift 5 for Virtualization, AI, and Sovereignty"
 docs_dir: publishing-house/spec
 nav:
 - Home: index.md

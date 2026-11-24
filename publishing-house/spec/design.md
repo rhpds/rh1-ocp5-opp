@@ -1,4 +1,4 @@
-# LB1161 - Sovereign Cloud Architecture with OpenShift, Multi-Cluster Data Residency and Compliance Management
+# LB1066: OpenShift 5 for Virtualization, AI, and Sovereignty
 
 ## Overview
 
