@@ -5,43 +5,41 @@
 [[what-youve-learned]]
 == What You've Learned
 
-Congratulations on completing this lab! You have worked through a hands-on sovereign cloud architecture using Red Hat OpenShift and its ecosystem of management, security, and AI tools.
+Congratulations on completing this lab. You have a practical path for management and security on OpenShift 5: place workloads on the right clusters, run AI on the platform you manage, and use RHACM and RHACS as the guardrails.
 
 Throughout this lab, you:
 
 === Virtualization
 
-* Created and managed multi-environment OpenShift clusters using Red Hat Advanced Cluster Management (RHACM), including deploying a Hosted Control Plane cluster in an EMEA region
-* Deployed and managed virtual machines alongside containers from a single unified console
+* Placed an EMEA Hosted Control Plane and a RHEL virtual machine on the fleet yourself with Red Hat Advanced Cluster Management (RHACM)
 
 === AI Adoption
 
-* Deployed Red Hat OpenShift AI and ran Jupyter notebooks to demonstrate sovereign AI capabilities
+* Ran a notebook on Red Hat OpenShift AI so the AI workload stayed on the cluster
 
 === Security and Sovereignty
 
-* Used OpenShift GitOps with Argo CD to declaratively deploy applications across multiple clusters in different geographic regions
-* Defined and enforced compliance policies as code for both GDPR (EMEA) and NIST 800-53 (US) frameworks
-* Configured compliance scanning with RHACS across regional clusters and reviewed audit results
-* Enforced runtime security policies to detect and block anomalous behavior in production containers
-* Built, signed, and verified container images using cosign and Red Hat Trusted Artifact Signer
+* Placed an application on the local, EMEA, and US clusters with OpenShift GitOps
+* Enforced regional policy with RHACM, including GDPR on EMEA and NIST 800-53 on the US cluster
+* Used RHACS to scan for vulnerabilities, review the results, and kill a pod that broke a runtime guardrail
+* Built and signed a container image with cosign and Red Hat Trusted Artifact Signer
 
 [[key-takeaways]]
 == Key Takeaways
 
-* *Sovereignty is achievable with open source* -- Red Hat's hybrid cloud approach enables organizations to deploy and manage their own sovereign cloud architectures without vendor lock-in.
-* *Policy as code scales governance* -- by codifying compliance requirements as Kubernetes-native policies, you can enforce data residency, security hardening, and audit requirements consistently across all clusters.
-* *Unified management reduces complexity* -- RHACM provides a single control plane for clusters, virtual machines, containers, and applications across geographic boundaries.
-* *Supply chain security is foundational* -- cryptographic signing and verification of container images ensures that only trusted, auditable software runs in your environments.
-* *AI sovereignty keeps data local* -- Red Hat OpenShift AI enables organizations to run AI workloads on their own infrastructure, maintaining control over sensitive data and models.
+* *Place the workload yourself* -- RHACM puts virtual machines, clusters, and applications on the clusters you choose. OpenShift Lightspeed is the hands-off alternative for that placement.
+* *Keep AI on the platform* -- OpenShift AI runs the workload where the data already lives.
+* *Guardrails limit the attack surface* -- RHACS shows the vulnerability and the runtime behavior, then enforces the policy. RHACM policy keeps a region in bounds.
+* *Identity is the next control* -- Red Hat Zero Trust Workload Identity Manager (ZTWIM) is how containers, virtual machines, and AI applications get multi-factor, keyless access to systems and data.
+* *The image you run should be one you signed* -- a golden base image in Quay, signed with Trusted Artifact Signer, stays inside the platform you manage.
 
 [[next-steps]]
 == Next steps
 
-* Explore additional compliance profiles and custom policies for your regulatory requirements
-* Implement GitOps-driven policy management for production environments
-* Set up continuous compliance monitoring with automated reporting
-* Evaluate Red Hat OpenShift AI for your organization's AI and ML workloads
+* Use OpenShift Lightspeed when you want the same placement work done for you
+* Add ZTWIM so each workload authenticates to the systems and data it is allowed to reach
+* Expand the RHACS profiles and RHACM policies for the regulations you operate under
+* Keep signing the images that land on the clusters
 
 [[references]]
 == References
@@ -49,7 +47,7 @@ Throughout this lab, you:
 * link:https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes[Red Hat Advanced Cluster Management documentation^]
 * link:https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_security_for_kubernetes[Red Hat Advanced Cluster Security documentation^]
 * link:https://docs.redhat.com/en/documentation/red_hat_openshift_ai_cloud_service[Red Hat OpenShift AI documentation^]
-* link:https://docs.sigstore.dev/cosign/overview[Sigstore cosign documentation^]
 * link:https://docs.redhat.com/en/documentation/red_hat_quay[Red Hat Quay documentation^]
+* link:https://docs.sigstore.dev/cosign/overview[Sigstore cosign documentation^]
 
-We hope you enjoyed this lab and gained practical experience building sovereign cloud architectures with Red Hat technologies.
+You now have a practical blueprint for management and security on OpenShift 5 in the age of agentic AI, using RHACM and RHACS to address the operational and security challenges of distributed, cloud-native AI workloads at scale.

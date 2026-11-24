@@ -2,21 +2,21 @@
 
 = Virtualization
 
-In this module you create an EMEA Hosted Control Plane and a RHEL virtual machine from Red Hat Advanced Cluster Management. Application placement, compliance, and image signing are in Module 3.
+In this module you unify the fleet by placing a cluster and a virtual machine yourself. Red Hat Advanced Cluster Management (RHACM) is the control plane. Red Hat OpenShift Lightspeed is the hands-off alternative for this kind of placement. Here you do the work in the console so you can see where each workload lands. Application placement, RHACS, and image signing are in Module 3.
 
-**Operational and Security Sovereignty** means ensuring your organization can operate technology independently and autonomously, with complete control over your data, infrastructure, and security information. 
+**Operational and Security Sovereignty** means ensuring your organization can operate technology independently and autonomously, with complete control over your data, infrastructure, and security information.
 
 This requires a flexible platform that can be used to deploy and manage your clusters, containers, virtual machines, and AI applications, while providing hardened authorization, authentication, data controls, encryption, vulnerability management, and more.
 
 [[multi-env-clusters]]
 == Multi-Environment Red Hat OpenShift Cluster and Virtual Machine Creation and Management
 
-Creating and managing clusters is the first step in building a sovereign cloud. When you control your clusters -- from setup to daily operations -- you decide where your workloads and data live, set your own policies, and stay compliant. This way, you can quickly adapt to regulations, keep your business flexible, and avoid relying on outside providers. With flexible management of clusters and virtual machines, you can build a cloud that fits your security and compliance needs from the start.
+Placing clusters is how you decide where virtual machines, containers, and applications run on OpenShift 5. When you create the cluster yourself, you choose the region, the label, and the policy boundary before any workload lands there.
 
 [[hub-cluster-overview]]
 === RHACM Management Cluster Overview
 
-Red Hat Advanced Cluster Management (RHACM) serves as the central control plane of your sovereign cloud environment for managing your entire fleet of OpenShift clusters. It provides a single point of authority and unified interface for cluster lifecycle management, policy enforcement, application deployment, and observability across multiple environments.
+Red Hat Advanced Cluster Management (RHACM) is the control plane for the fleet. From one console you create clusters, place virtual machines, and later target policy at the clusters that should run a given workload.
 
 === Create and Manage Kubernetes Clusters
 
@@ -116,9 +116,9 @@ NOTE: Deploying this Hosted Control Plane (HCP) cluster will take about 5 to 10 
 
 == Multi-environment Workload Creation, Management, and Observability
 
-*Sovereign cloud operations require that organizations retain full control over where and how their containers and virtual machines run.*
+Virtual machines, containers, and AI workloads belong on the clusters you choose, not on whichever cluster is closest.
 
-RHACM empowers you to deploy, manage, and observe all workloads -- VMs, containers, and AI/ML -- centrally with policy-driven governance and compliance across the hybrid cloud.
+RHACM lets you see those workloads from one console and place the virtual machine in this module on the fleet you just extended.
 
 [[create-manage-vms]]
 
@@ -171,17 +171,17 @@ image::12-vm-finish.png[link=self, window=blank, width=100%, Create VM]
 
 [TIP]
 ====
-*UI or GitOps -- The Choice is Yours!*
+*Hands-on in this module. Lightspeed when you want hands-off.*
 
-While this lab demonstrates the graphical capabilities of the RHACM console, Virtual Machines in OpenShift are fundamentally Kubernetes objects. You can define your VMs as code using YAML and deploy them using Red Hat OpenShift GitOps (ArgoCD). RHACM supports both workflows: use the UI for quick administration and discovery, or use GitOps for a fully declarative, audit-ready production pipeline. In sovereign cloud environments, GitOps workflows provide version-controlled infrastructure that meets compliance requirements and audit trails for regulatory demonstrations.
+You are placing this virtual machine yourself in the RHACM console. Red Hat OpenShift Lightspeed is the hands-off alternative for the same kind of placement. Virtual machines are still Kubernetes objects, so the same placement can later be declared with OpenShift GitOps.
 ====
 
 [[virtualization-takeaways]]
 == Virtualization Takeaways
 
-* **Centralized cluster management** -- Use RHACM to create, label, and manage OpenShift clusters across multiple regions from one place.
+* **Place clusters yourself** -- Use RHACM to create and label an OpenShift cluster so later workloads land in the right region.
 
-* **Unified workload management** -- Operate virtual machines and containers together, with full visibility across clusters.
+* **Place virtual machines on that fleet** -- Run a RHEL virtual machine from the same console that manages the clusters.
 
 [.text-center]
 image::https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHNuaGJoenozbDg5dnZ6eXNwbmluazg2MDM3c2doMHRybnV0YnJ6bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VhWVAa7rUtT3xKX6Cd/giphy.gif[Celebration, width=400, link=self, window=blank]

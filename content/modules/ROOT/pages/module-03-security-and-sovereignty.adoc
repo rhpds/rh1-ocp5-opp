@@ -2,7 +2,12 @@
 
 = Security and Sovereignty
 
-This module is the governance, assurance, and supply-chain path. You place the patient-portal application across clusters, enforce regional policy, prove runtime and compliance controls with RHACS, and sign the image you build. The last sections are optional extra governance work.
+With the cluster, the virtual machine, and the AI workload in place, this module is sovereignty and security on OpenShift 5. You place the patient-portal application on the right clusters, then use Red Hat Advanced Cluster Security (RHACS) to scan for vulnerabilities, watch runtime behavior, and create guardrails that limit each workload's attack surface. RHACM policies keep regional workloads in bounds. You finish by signing the image you build. The last sections are optional extra governance.
+
+[NOTE]
+====
+Red Hat Zero Trust Workload Identity Manager (ZTWIM) is how containers, virtual machines, and AI applications get multi-factor, keyless access to systems and data. The guardrails in this module are the RHACS and RHACM controls around those workloads.
+====
 
 [[container-workloads]]
 == Deploy and Manage Container Workloads via OpenShift GitOps
@@ -19,11 +24,11 @@ For this lab, you’ll use the push model (with Argo CD already set up), so you 
 
 == Multi-environment Application Deployment and Management
 
-*Sovereign cloud operations require that organizations retain full control over where and how their containers and virtual machines run and provide the flexibility in how they are deployed and managed.*
+*Sovereign operations mean you decide which clusters run the application.*
 
-In this next step, you'll use Red Hat® OpenShift® GitOps with Argo CD to declaratively deploy the a demo application to all three clusters, including the local-cluster, EMEA cluster and the AWS US cluster. 
+In this next step, you'll use Red Hat OpenShift GitOps with Argo CD to place the demo application on the local cluster, the EMEA cluster, and the AWS US cluster.
 
-This is all to demonstrate automated, Git-driven multi-cluster consistency while supporting sovereign cloud requirements by keeping patient data securely within approved geographic boundaries.
+That placement keeps the application on the clusters you approved.
 
 .Procedure
 . From the **Fleet Management** tab, navigate to *Applications* from the left side menu.
@@ -121,9 +126,9 @@ image::03-app-complete.png[link=self, window=blank, width=100%, ACM App Placemen
 [[security-through-policy-guardrails]]
 == Security Through Policy Guardrails
 
-*Sovereignty is not just about control -- it's about confidence*
+*Sovereignty is confidence that each workload stays inside the boundary you set.*
 
-Achieving true sovereignty across your cloud environments includes governance and the ability to change as geographic boundaries and governments do. You need automation and flexible guardrails, as code, to achieve this.
+On OpenShift 5 that boundary is policy. You codify it, target it at a region, and let RHACM watch for drift.
 
 *RHACM is built for this purpose!*
 
@@ -287,15 +292,11 @@ If you want to deploy more policies to the EMEA cluster, you can do so by follow
 
 == Assurance
 
-*Sovereignty isn’t just about control -- it’s about confidence*
+*Sovereignty is confidence that the platform behaves the way you required.*
 
-Confidence that your applications and clusters operate exactly as intended, fully compliant with regulations, security standards, and internal policies no matter where they run.
+RHACS is how you see that. You scan for vulnerabilities, watch what a workload does at runtime, and turn the misses into guardrails.
 
-Without continuous assurance, even the most advanced cloud native environments carry hidden risks. A single compliance gap can expose your organization to regulatory fines, security breaches, data sovereignty violations, or loss of customer trust. Assurance eliminates that uncertainty. It delivers verifiable proof that every workload and cluster meets the highest standards of security and compliance across EMEA, the US, and beyond.
-
-*Achieving this level of assurance requires a practical and structured approach.*
-
-So let's get practical in our example of an EMEA environment and a US environment and observe, audit, police and manage our clusters and applications. We will start by looking at the security, compliance and environment insights that we can get from Red Hat Advanced Cluster Security for Kubernetes (RHACS).
+A miss on a scan or a runtime action is the gap a guardrail is supposed to close. You will look at both, on the EMEA side of the fleet and on the US cluster.
 
 [[security-and-environment-insights]]
 == Security and Environment Insights
@@ -329,7 +330,7 @@ Administrator login is available with:
 
 == Compliance Checks with RHACS and the Compliance Operator
 
-Sovereign cloud operations require that organizations are assured that their clusters and applications are compliant with regulations, security standards, and internal policies no matter where they run.
+RHACS plus the Compliance Operator is how you prove the clusters match the guardrails you set, in every region.
 
 First let's add a configuration to the local-cluster to see the difference between the compliance checks.
 
@@ -481,7 +482,7 @@ The RHACS compliance dashboard shows an overview of your scan schedules and resu
 [[maintaining-control-in-sovereign-multi-region-environments]]
 == Maintaining Control in Sovereign and Multi-Region Environments
 
-In sovereign cloud setups, strict control over what runs inside your infrastructure is essential for data protection. Monitoring for file integrity and anomalous behavior is essential.
+A guardrail is only useful if it holds while the workload is running. RHACS can see a process that should not be there and stop the pod.
 
 Red Hat Advanced Cluster Security (RHACS) includes built-in policies that detect and block risky behaviors such as unauthorized access attempts, persistent threats, lateral movement, and file integrity violations. These policies help you enforce the immutable container principle -- containers should only run exactly what you approved, with no unexpected changes.
 
@@ -489,7 +490,7 @@ Red Hat Advanced Cluster Security (RHACS) includes built-in policies that detect
 
 == Use Policy-as-Code to Block Anomalous Behavior at Runtime
 
-Package managers such as apt, apk, yum, and dnf are useful on virtual machines, but they have no place in production containers. Allowing them enables uncontrolled software installation, dramatically increases the attack surface, and breaks auditability and immutability -- all of which are core requirements for sovereign cloud environments.
+Package managers such as apt, apk, yum, and dnf are useful on virtual machines, but they have no place in production containers. Allowing them widens the attack surface. The guardrail in this exercise kills the pod when that happens.
 
 *Policy-as-Code is an effective way to scale this across your global environments.*
 
@@ -639,7 +640,7 @@ You have successfully stopped yourself from downloading malicious packages! Howe
 [[violations-reporting-audit-compliance]]
 == Violations and Reporting for Audit and Compliance
 
-Event audits are crucial not just for security best practices, but also to meet regulatory requirements and uphold data sovereignty standards that can vary by region. Tailoring security policies and audit events to regional needs helps ensure compliance with local laws and regulations, giving your organization greater control and transparency over your workloads and security posture.
+The violation record is the audit trail for the guardrail. It shows what ran, who ran it, and that RHACS stopped the pod.
 
 *Procedure*
 
@@ -669,9 +670,9 @@ image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ODhkZThkZXVxb2twdHloazAz
 
 == Module Goals
 
-*Own your software supply chain.*
+*Own the image that runs on OpenShift 5.*
 
-Ingest, build, sign, attest and secure your software supply chain. Take control by working hands-on with cryptographic signing, verification, and Software Bills of Materials (SBOMs). These practices enable you to maintain sovereignty over your software artifacts and dependencies throughout their entire lifecycle.
+Pull a golden base image into your registry, rebuild the application from it, and sign the result. That is how the supply chain stays inside the platform you manage.
 
 [[setup]]
 == Installation and Setup

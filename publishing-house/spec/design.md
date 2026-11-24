@@ -2,7 +2,7 @@
 
 ## Overview
 
-This lab delivers hands-on experience designing and operating a sovereign cloud architecture using the Red Hat OpenShift Platform Plus suite across multiple clusters. It addresses the core pillars of digital sovereignty: data residency enforcement, continuous compliance assurance, supply chain integrity, and on-premises AI. Participants will create a Hosted Control Plane (HCP) cluster scoped to an EMEA region, enforce GDPR and NIST policy-as-code across geographically separated clusters using RHACM, run multi-profile compliance scans and observe real-time runtime security enforcement with RHACS, build and cryptographically sign container images using Red Hat Trusted Artifact Signer, and deploy a CPU-based AI workbench with Red Hat OpenShift AI — all without relying on external cloud provider services.
+This hands-on lab is the OpenShift 5 path for placing virtual machines, containers, and applications on the right clusters, running an AI workload on the platform, and securing that platform with RHACM and RHACS. Learners create an EMEA Hosted Control Plane and a RHEL virtual machine themselves (OpenShift Lightspeed is the hands-off alternative), run a notebook on OpenShift AI, place an application with OpenShift GitOps, use RHACS to scan and enforce runtime guardrails, apply regional policy, and sign the image they build. Red Hat Zero Trust Workload Identity Manager (ZTWIM) is the identity control for giving those workloads the right access to systems and data.
 
 ## Target Audience
 
