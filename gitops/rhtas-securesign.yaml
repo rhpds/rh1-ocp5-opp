@@ -1,0 +1,80 @@
+# Name is "securesign" so a later learner setup.sh sees it and does not create a second stack.
+# OPENSHIFT_CLUSTER_INGRESS_DOMAIN is substituted by the kustomize-envvar plugin.
+apiVersion: rhtas.redhat.com/v1alpha1
+kind: Securesign
+metadata:
+  name: securesign
+  namespace: trusted-artifact-signer
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  fulcio:
+    certificate:
+      commonName: fulcio.hostname
+      organizationEmail: admin@demo.redhat.com
+      organizationName: Red Hat
+    config:
+      OIDCIssuers:
+      - ClientID: trusted-artifact-signer
+        Issuer: https://sso.${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}/realms/keycloak
+        IssuerURL: https://sso.${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}/realms/keycloak
+        Type: email
+    ctlog:
+      port: 80
+      prefix: trusted-artifact-signer
+    externalAccess:
+      enabled: true
+    monitoring:
+      enabled: false
+  rekor:
+    externalAccess:
+      enabled: true
+    monitoring:
+      enabled: false
+    pvc:
+      accessModes:
+      - ReadWriteOnce
+      retain: true
+      size: 5Gi
+    rekorSearchUI:
+      enabled: true
+    sharding: []
+    signer:
+      kms: secret
+    trillian:
+      port: 8091
+    backFillRedis:
+      enabled: true
+      schedule: 0 0 * * *
+  trillian:
+    database:
+      create: true
+      pvc:
+        accessModes:
+        - ReadWriteOnce
+        retain: true
+        size: 5Gi
+      tls: {}
+    monitoring:
+      enabled: false
+  ctlog:
+    monitoring:
+      enabled: false
+    trillian:
+      port: 8091
+  tuf:
+    externalAccess:
+      enabled: true
+    keys:
+    - name: rekor.pub
+    - name: ctfe.pub
+    - name: fulcio_v1.crt.pem
+    port: 80
+    pvc:
+      accessModes:
+      - ReadWriteOnce
+      retain: true
+      size: 100Mi
+    rootKeySecretRef:
+      name: tuf-root-keys

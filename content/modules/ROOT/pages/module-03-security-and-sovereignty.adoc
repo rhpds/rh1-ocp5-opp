@@ -834,11 +834,11 @@ if [ -z "$OIDC_ISSUER_URL" ]; then
 fi
 if [ -z "$OIDC_ISSUER_URL" ]; then
   KK_HOST=$(oc get route keycloak -n keycloak -o jsonpath='{.spec.host}' 2>/dev/null)
-  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/realms/openshift"; fi
+  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/realms/keycloak"; fi
 fi
 if [ -z "$OIDC_ISSUER_URL" ]; then
   KK_HOST=$(oc get route keycloak -n rhsso -o jsonpath='{.spec.host}' 2>/dev/null)
-  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/auth/realms/openshift"; fi
+  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/auth/realms/keycloak"; fi
 fi
 export COSIGN_FULCIO_URL=$(oc get fulcio -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
 export COSIGN_REKOR_URL=$(oc get rekor -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
@@ -966,7 +966,7 @@ By typing 'y', you attest that you grant (or have permission to grant) and agree
 error opening browser: exec: "xdg-open": executable file not found in $PATH
 Go to the following link in a browser:
 
-         https://sso.apps.<your-cluster>.<domain>/realms/openshift/protocol/openid-connect/auth?access_type=online&client_id=trusted-artifact-signer&code_challenge=...
+         https://sso.apps.<your-cluster>.<domain>/realms/keycloak/protocol/openid-connect/auth?access_type=online&client_id=trusted-artifact-signer&code_challenge=...
 Enter verification code:
 ----
 +

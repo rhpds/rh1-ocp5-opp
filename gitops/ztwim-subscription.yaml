@@ -1,0 +1,24 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: zero-trust-workload-identity-manager
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  targetNamespaces:
+  - zero-trust-workload-identity-manager
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-zero-trust-workload-identity-manager
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  channel: stable-v1
+  installPlanApproval: Automatic
+  name: openshift-zero-trust-workload-identity-manager
+  source: redhat-operators-snapshot-ztwim
+  sourceNamespace: openshift-marketplace
