@@ -6,6 +6,5 @@ resources:
 - keycloak-sso-clients.yaml
 - rhtas-subscription.yaml
 - rhtas-securesign.yaml
-- ztwim-catalogsource.yaml
 - ztwim-subscription.yaml
 - ztwim-spire.yaml

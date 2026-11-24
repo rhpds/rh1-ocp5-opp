@@ -20,5 +20,5 @@ spec:
   channel: stable-v1
   installPlanApproval: Automatic
   name: openshift-zero-trust-workload-identity-manager
-  source: redhat-operators-snapshot-ztwim
+  source: redhat-operators
   sourceNamespace: openshift-marketplace

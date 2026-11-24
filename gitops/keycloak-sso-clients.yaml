@@ -7,7 +7,7 @@ metadata:
   name: keycloak-sso-clients
   namespace: keycloak
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "3"
     argocd.argoproj.io/sync-options: Replace=true
 spec:
   backoffLimit: 8
@@ -20,7 +20,7 @@ spec:
         image: registry.access.redhat.com/ubi9/python-312:latest
         env:
         - name: OPENSHIFT_CLUSTER_INGRESS_DOMAIN
-          value: ${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+          value: ${SUB_DOMAIN}
         - name: KEYCLOAK_REALM
           value: keycloak
         - name: KEYCLOAK_ADMIN

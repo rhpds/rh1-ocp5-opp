@@ -9,7 +9,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
-  trustDomain: ${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+  trustDomain: ${SUB_DOMAIN}
   clusterName: cluster
   bundleConfigMap: spire-bundle
 ---
@@ -32,7 +32,7 @@ spec:
   datastore:
     databaseType: sqlite3
     connectionString: /run/spire/data/datastore.sqlite3
-  jwtIssuer: https://spire-spiffe-oidc-discovery-provider.${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+  jwtIssuer: https://spire-spiffe-oidc-discovery-provider.${SUB_DOMAIN}
 ---
 apiVersion: operator.openshift.io/v1alpha1
 kind: SpireAgent
@@ -70,5 +70,5 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
-  jwtIssuer: https://spire-spiffe-oidc-discovery-provider.${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+  jwtIssuer: https://spire-spiffe-oidc-discovery-provider.${SUB_DOMAIN}
   managedRoute: "true"
