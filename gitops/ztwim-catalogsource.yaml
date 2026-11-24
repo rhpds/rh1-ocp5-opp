@@ -1,0 +1,17 @@
+# ZTWIM is not in the live redhat-operators catalog on the OCP 5 pools.
+# Same snapshot the OpenShift Ops Day catalog uses (stable-v1 -> v1.1.3).
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-operators-snapshot-ztwim
+  namespace: openshift-marketplace
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  sourceType: grpc
+  image: quay.io/rhpds/olm_snapshot_redhat_catalog:v5.0_2026_11_11
+  displayName: Red Hat Operators snapshot for Zero Trust Workload Identity Manager
+  publisher: Red Hat
+  updateStrategy:
+    registryPoll:
+      interval: 30m

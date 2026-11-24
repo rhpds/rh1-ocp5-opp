@@ -13,10 +13,10 @@
 ** xref:module-01-virtualization.adoc#virtualization-takeaways[Virtualization Takeaways]
 
 * xref:module-02-ai-adoption.adoc[2. AI Adoption]
-** xref:module-02-ai-adoption.adoc#sovereign-ai-overview[Sovereign AI: Bringing Intelligence to Your Data]
+** xref:module-02-ai-adoption.adoc#sovereign-ai-overview[AI on OpenShift 5]
 ** xref:module-02-ai-adoption.adoc#exploring-openshift-ai-dashboard[Exploring the OpenShift AI Dashboard]
 ** xref:module-02-ai-adoption.adoc#deploying-a-jupyter-notebook[Deploying a Jupyter Notebook]
-** xref:module-02-ai-adoption.adoc#module-conclusion[Bringing Intelligence to Your Data]
+** xref:module-02-ai-adoption.adoc#module-conclusion[The Workload Stays on the Cluster]
 
 * xref:module-03-security-and-sovereignty.adoc[3. Security and Sovereignty]
 ** xref:module-03-security-and-sovereignty.adoc#container-workloads[Deploy and Manage Container Workloads via OpenShift GitOps]

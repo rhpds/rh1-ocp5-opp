@@ -1,0 +1,74 @@
+# SPIRE issues its own workload identities. User login for OpenShift, GitOps,
+# OpenShift AI, and RHACS stays on the Keycloak realm "keycloak".
+apiVersion: operator.openshift.io/v1alpha1
+kind: ZeroTrustWorkloadIdentityManager
+metadata:
+  name: cluster
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  trustDomain: ${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+  clusterName: cluster
+  bundleConfigMap: spire-bundle
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: SpireServer
+metadata:
+  name: cluster
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  caSubject:
+    commonName: redhat.com
+    country: US
+    organization: Red Hat
+  persistence:
+    size: 5Gi
+    accessMode: ReadWriteOnce
+  datastore:
+    databaseType: sqlite3
+    connectionString: /run/spire/data/datastore.sqlite3
+  jwtIssuer: https://spire-spiffe-oidc-discovery-provider.${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: SpireAgent
+metadata:
+  name: cluster
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  nodeAttestor:
+    k8sPSATEnabled: "true"
+  workloadAttestors:
+    k8sEnabled: "true"
+    workloadAttestorsVerification:
+      type: auto
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: SpiffeCSIDriver
+metadata:
+  name: cluster
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  agentSocketPath: /run/spire/agent-sockets
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: SpireOIDCDiscoveryProvider
+metadata:
+  name: cluster
+  namespace: zero-trust-workload-identity-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  jwtIssuer: https://spire-spiffe-oidc-discovery-provider.${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+  managedRoute: "true"

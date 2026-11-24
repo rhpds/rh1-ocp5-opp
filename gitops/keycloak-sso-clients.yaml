@@ -1,0 +1,169 @@
+# Registers the Trusted Artifact Signer client and the lab signing user on the
+# Keycloak realm that already backs OpenShift SSO. The authentication workload
+# owns that realm import, so this job only adds the client mappers and user.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-sso-clients
+  namespace: keycloak
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  backoffLimit: 8
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: configure
+        image: registry.access.redhat.com/ubi9/python-312:latest
+        env:
+        - name: OPENSHIFT_CLUSTER_INGRESS_DOMAIN
+          value: ${OPENSHIFT_CLUSTER_INGRESS_DOMAIN}
+        - name: KEYCLOAK_REALM
+          value: keycloak
+        - name: KEYCLOAK_ADMIN
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-initial-admin
+              key: username
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-initial-admin
+              key: password
+        command: ["python3", "-c"]
+        args:
+        - |
+          import json, os, ssl, urllib.error, urllib.parse, urllib.request
+          ctx = ssl._create_unverified_context()
+          domain = os.environ["OPENSHIFT_CLUSTER_INGRESS_DOMAIN"]
+          realm = os.environ["KEYCLOAK_REALM"]
+          base = f"https://sso.{domain}"
+
+          def call(method, url, token=None, payload=None, form=None, ok=(200, 201, 204)):
+              headers = {}
+              body = None
+              if token:
+                  headers["Authorization"] = f"Bearer {token}"
+              if form is not None:
+                  body = urllib.parse.urlencode(form).encode()
+                  headers["Content-Type"] = "application/x-www-form-urlencoded"
+              elif payload is not None:
+                  body = json.dumps(payload).encode()
+                  headers["Content-Type"] = "application/json"
+              req = urllib.request.Request(url, data=body, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, context=ctx, timeout=60) as resp:
+                      raw = resp.read().decode()
+                      return resp.status, json.loads(raw) if raw else None
+              except urllib.error.HTTPError as err:
+                  raw = err.read().decode()
+                  if err.code not in ok and err.code != 409:
+                      raise SystemExit(f"{method} {url} failed: {err.code} {raw}")
+                  try:
+                      parsed = json.loads(raw) if raw else None
+                  except json.JSONDecodeError:
+                      parsed = raw
+                  return err.code, parsed
+
+          status, token_body = call(
+              "POST",
+              f"{base}/realms/master/protocol/openid-connect/token",
+              form={
+                  "client_id": "admin-cli",
+                  "username": os.environ["KEYCLOAK_ADMIN"],
+                  "password": os.environ["KEYCLOAK_ADMIN_PASSWORD"],
+                  "grant_type": "password",
+              },
+          )
+          token = token_body["access_token"]
+          admin = f"{base}/admin/realms/{realm}"
+          client_id = "trusted-artifact-signer"
+          client = {
+              "clientId": client_id,
+              "name": client_id,
+              "description": "Red Hat Trusted Artifact Signer",
+              "enabled": True,
+              "publicClient": True,
+              "protocol": "openid-connect",
+              "standardFlowEnabled": True,
+              "implicitFlowEnabled": False,
+              "directAccessGrantsEnabled": True,
+              "redirectUris": ["*", "urn:ietf:wg:oauth:2.0:oob"],
+              "defaultClientScopes": ["profile", "email", "roles"],
+              "protocolMappers": [
+                  {
+                      "name": "email",
+                      "protocol": "openid-connect",
+                      "protocolMapper": "oidc-usermodel-property-mapper",
+                      "config": {
+                          "claim.name": "email",
+                          "id.token.claim": "true",
+                          "jsonType.label": "String",
+                          "user.attribute": "email",
+                          "userinfo.token.claim": "true",
+                      },
+                  },
+                  {
+                      "name": "email-verified",
+                      "protocol": "openid-connect",
+                      "protocolMapper": "oidc-usermodel-property-mapper",
+                      "config": {
+                          "claim.name": "email-verified",
+                          "id.token.claim": "true",
+                          "user.attribute": "emailVerified",
+                          "userinfo.token.claim": "true",
+                      },
+                  },
+                  {
+                      "name": "audience",
+                      "protocol": "openid-connect",
+                      "protocolMapper": "oidc-hardcoded-claim-mapper",
+                      "config": {
+                          "access.token.claim": "true",
+                          "claim.name": "aud",
+                          "claim.value": client_id,
+                          "id.token.claim": "true",
+                          "userinfo.token.claim": "true",
+                      },
+                  },
+              ],
+          }
+          status, found = call("GET", f"{admin}/clients?clientId={client_id}", token=token)
+          matches = [item for item in (found or []) if item.get("clientId") == client_id]
+          if matches:
+              client["id"] = matches[0]["id"]
+              call("PUT", f"{admin}/clients/{matches[0]['id']}", token=token, payload=client)
+              print(f"updated client {client_id}")
+          else:
+              call("POST", f"{admin}/clients", token=token, payload=client, ok=(201, 409))
+              print(f"created client {client_id}")
+
+          status, users = call("GET", f"{admin}/users?username=jdoe&exact=true", token=token)
+          user = {
+              "username": "jdoe",
+              "email": "jdoe@redhat.com",
+              "emailVerified": True,
+              "enabled": True,
+              "firstName": "Jane",
+              "lastName": "Doe",
+          }
+          if users:
+              uid = users[0]["id"]
+              call("PUT", f"{admin}/users/{uid}", token=token, payload=user)
+          else:
+              call("POST", f"{admin}/users", token=token, payload=user, ok=(201, 409))
+              status, users = call("GET", f"{admin}/users?username=jdoe&exact=true", token=token)
+              if not users:
+                  raise SystemExit("jdoe was not created in the keycloak realm")
+              uid = users[0]["id"]
+          call(
+              "PUT",
+              f"{admin}/users/{uid}/reset-password",
+              token=token,
+              payload={"type": "password", "value": "secure", "temporary": False},
+              ok=(204,),
+          )
+          print("jdoe is present in the keycloak realm")
