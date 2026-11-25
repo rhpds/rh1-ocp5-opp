@@ -1,5 +1,5 @@
 # SPIRE issues its own workload identities. User login for OpenShift, GitOps,
-# OpenShift AI, and RHACS stays on the Keycloak realm "keycloak".
+# and RHACS stays on the Keycloak realm "keycloak".
 apiVersion: operator.openshift.io/v1alpha1
 kind: ZeroTrustWorkloadIdentityManager
 metadata:

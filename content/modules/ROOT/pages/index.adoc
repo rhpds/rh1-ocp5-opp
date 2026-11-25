@@ -17,8 +17,7 @@ By the end of the lab, you'll have a practical blueprint for management and secu
 The modules follow that path. Through hands-on activities, you will:
 
 * Place a new cluster with Red Hat Advanced Cluster Management (RHACM), then create a virtual machine with OpenShift Lightspeed or from a template
-* Troubleshoot and review updates with OpenShift Lightspeed, then call cluster and security tools through an MCP server and the MCP gateway
-* Run an AI workload on Red Hat OpenShift AI, on the cluster where the data already lives
+* Investigate application issues with agentic troubleshooting, then call cluster and security APIs through an MCP server and the MCP gateway
 * Write policy for the application already running on the two clusters, attest it, and rotate its TLS certificate
 * Use RHACS to scan for vulnerabilities, watch runtime behavior, and enforce guardrails that limit the attack surface
 * Apply sovereignty policies so regional workloads stay in bounds
@@ -38,7 +37,7 @@ Before beginning this lab, you should have:
 This lab is organized into three modules, plus an optional extra:
 
 * xref:module-01-virtualization.adoc[Module 1: Virtualization] - Create a virtual machine with OpenShift Lightspeed or from a template, then check compliance and vulnerabilities in RHACS
-* xref:module-02-ai-adoption.adoc[Module 2: AI Adoption] - Agentic troubleshooting, MCP server, MCP gateway, and an OpenShift AI notebook
+* xref:module-02-ai-adoption.adoc[Module 2: AI Adoption] - Agentic troubleshooting, MCP server, and MCP gateway
 * xref:module-03-security-and-sovereignty.adoc[Module 3: Security and Sovereignty] - Policy, workload identity, and certificate rotation for the application that is already running
 * xref:module-04-extra.adoc[Extra] - Lightwell and the trusted software supply chain, about 30 minutes
 * xref:conclusion.adoc[Conclusion] - Summary, key takeaways, and next steps
@@ -50,11 +49,10 @@ This lab has two OpenShift clusters pre-configured. One cluster called *local-cl
 
 The environment has also already been pre-configured for you with the following applications already deployed:
 
-* On the right there are five tabs:
-** *OpenShift Console*: this is where you will spend the majority of the time configuring the various environments and applications
+* On the right there are four tabs:
+** *OpenShift Console*: this is where you will spend the majority of the time configuring the various environments and applications. OpenShift Lightspeed is the chat icon in this console.
 ** *Advanced Cluster Security*: the console for OpenShiftsecurity related activities.
 ** *Quay*: the console for image registry and artifacts
-** *OpenShift AI*: the console for building and training AI models via Jupyter notebooks and specialized accelerators
 ** *Terminal*: command line access to the OpenShift environment. You will run commands in this tab to deploy a few initial settings and interact with the applications.
 
 === Install Insecure Applications While You Work on Module 1
@@ -116,18 +114,6 @@ Administrator login credentials:
 |===
 | *Red Hat Quay Console Username:* | {quay_admin_username}
 | *Red Hat Quay Console Password:* | {quay_admin_password}
-|===
-
-=== OpenShift AI Console Access
-
-Your OpenShift AI Console is also available in the right panel. In case you want to open it in another window it is here: {rhoai_dashboard}[window=blank]
-
-Administrator login credentials:
-
-[cols="1,1"]
-|===
-| *OpenShift AI Console Username:* | {openshift_cluster_admin_username}
-| *OpenShift AI Console Password:* | {acs_portal_password}
 |===
 
 [[whats-next]]
