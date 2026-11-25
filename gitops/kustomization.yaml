@@ -8,3 +8,4 @@ resources:
 - rhtas-securesign.yaml
 - ztwim-subscription.yaml
 - ztwim-spire.yaml
+- rhel-webserver.yaml
