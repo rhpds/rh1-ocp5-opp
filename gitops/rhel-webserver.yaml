@@ -1,7 +1,8 @@
 # The opp-config Application renders this with the kustomize-envvar plugin.
-# ${VM_USER}, ${VM_PASSWORD}, ${SATELLITE_URL}, ${SATELLITE_ORG},
-# ${SATELLITE_ACTIVATIONKEY}, and ${GUID} come from that plugin's environment.
-# The virtual machine stays stopped. Starting it reads userdata from the Secret.
+# ${VM_USER}, ${VM_PASSWORD}, ${SATELLITE_URL}, ${SATELLITE_ORG}, and
+# ${SATELLITE_ACTIVATIONKEY} come from that plugin's environment.
+# No virtual machine is created. Attendees create their own and can attach
+# this Secret with cloudInitNoCloud.secretRef in this namespace.
 ---
 apiVersion: v1
 kind: Namespace
@@ -43,7 +44,6 @@ stringData:
         subscription-manager register \
           --activationkey="${SATELLITE_ACTIVATIONKEY}" \
           --org="${SATELLITE_ORG}" \
-          --name="rhel-webserver-${GUID}" \
           --force
       - subscription-manager release --set=10
       - |
@@ -51,79 +51,3 @@ stringData:
           --enable=rhel-10-for-x86_64-baseos-rpms \
           --enable=rhel-10-for-x86_64-appstream-rpms
       - echo "Setup complete"
----
-apiVersion: kubevirt.io/v1
-kind: VirtualMachine
-metadata:
-  name: rhel-webserver
-  namespace: rhel-webserver
-  labels:
-    app: rhel-webserver
-  annotations:
-    argocd.argoproj.io/sync-wave: "2"
-    argocd.argoproj.io/sync-options: Replace=true
-spec:
-  dataVolumeTemplates:
-  - metadata:
-      name: rhel-webserver-volume
-    spec:
-      sourceRef:
-        kind: DataSource
-        name: rhel10
-        namespace: openshift-virtualization-os-images
-      storage:
-        resources:
-          requests:
-            storage: 30Gi
-  runStrategy: Halted
-  template:
-    metadata:
-      labels:
-        network.kubevirt.io/headlessService: headless
-        kubevirt.io/domain: rhel-webserver
-        kubevirt.io/size: small
-    spec:
-      architecture: amd64
-      domain:
-        cpu:
-          cores: 1
-          sockets: 1
-          threads: 1
-        memory:
-          guest: 2Gi
-        devices:
-          autoattachVSOCK: true
-          disks:
-          - name: rootdisk
-            bootOrder: 1
-          - name: cloudinitdisk
-            disk:
-              bus: virtio
-          interfaces:
-          - masquerade: {}
-            model: virtio
-            name: default
-          rng: {}
-        features:
-          acpi: {}
-          smm:
-            enabled: true
-        firmware:
-          bootloader:
-            efi:
-              secureBoot: false
-        machine:
-          type: pc-q35-rhel9.6.0
-        resources: {}
-      networks:
-      - name: default
-        pod: {}
-      subdomain: headless
-      volumes:
-      - name: rootdisk
-        dataVolume:
-          name: rhel-webserver-volume
-      - name: cloudinitdisk
-        cloudInitNoCloud:
-          secretRef:
-            name: rhel-webserver-cloudinit
