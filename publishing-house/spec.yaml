@@ -23,7 +23,7 @@ spec:
   title: "LB1066: OpenShift 5 for Virtualization, AI, and Sovereignty"
   learning_objectives:
     - "Deploy a Hosted Control Plane (HCP) cluster in an EMEA region using Red Hat Advanced Cluster Management and verify it is registered in the fleet inventory"
-    - "Use OpenShift Lightspeed for agentic troubleshooting and update readiness, call cluster and security tools through an MCP server and the MCP gateway, and run a data science notebook on a CPU workbench in Red Hat OpenShift AI"
+    - "Use OpenShift Lightspeed for agentic troubleshooting, and call cluster and security APIs through an MCP server and the MCP gateway"
     - "Apply RHACM and RHACS policy to the patient-portal application already running on local-cluster and aws-us, attest that application with Zero Trust Workload Identity Manager, and rotate its service TLS certificate"
     - "Configure multi-cluster data residency and GDPR policy-as-code using RHACM Policies, Placements, and PlacementBindings targeting the EMEA cluster"
     - "Configure multi-profile compliance scans (CIS, Essential 8, NERC-CIP, PCI-DSS, STIG) across clusters using RHACS and the Compliance Operator"
@@ -110,12 +110,12 @@ approval_checklist:
     prerequisites_verifiable: false
     assessment_strategy: ""
     catalog_gap: ""
-    design_overview: "This advanced lab covers sovereign cloud architecture using the full Red Hat OpenShift Platform Plus suite across a three-cluster fleet (hub, EMEA HCP, and US managed cluster). Content is organized into three modules, Virtualization, AI Adoption, and Security and Sovereignty, plus an optional extra for Lightwell and image signing. Students enforce data residency and regulatory compliance through RHACM policy-as-code, demonstrate runtime security enforcement with RHACS, and deploy an on-premises AI workbench with RHOAI — all without reliance on external cloud provider services. Former supplementary governance exercises remain in the lab as optional sections at the end of Module 3."
+    design_overview: "This advanced lab covers sovereign cloud architecture using the full Red Hat OpenShift Platform Plus suite across a three-cluster fleet (hub, EMEA HCP, and US managed cluster). Content is organized into three modules, Virtualization, AI Adoption, and Security and Sovereignty, plus an optional extra for Lightwell and image signing. Students enforce data residency and regulatory compliance through RHACM policy-as-code, demonstrate runtime security enforcement with RHACS, and use OpenShift Lightspeed for agentic troubleshooting, the MCP server, and the MCP gateway. Former supplementary governance exercises remain in the lab as optional sections at the end of Module 3."
     module_summaries:
       - title: "Virtualization"
         overview: "Students create an HCP/EMEA cluster via RHACM, then create a RHEL virtual machine named rhel9-lab-vm. OpenShift Lightspeed creates it first. If Lightspeed does not leave the machine running, students create the same machine from the RHEL 9 template. They then confirm the hub cluster is compliant through the Compliance Operator and RHACS, and review vulnerabilities for that virtual machine in RHACS or by asking Lightspeed to query RHACS. The EMEA cluster continues provisioning while students move on."
       - title: "AI Adoption"
-        overview: "Students use the OpenShift 5 agentic path: Lightspeed troubleshooting, agentic update analysis, an OpenShift MCP server, and the Connectivity Link MCP gateway. Where that first-look stack is not installed, they perform the same checks with Lightspeed or oc against the virtual machines from Module 1. They then launch a CPU-based Python 3.12 Jupyter workbench and run a student performance notebook on the cluster."
+        overview: "Students follow the OpenShift 5 First Look exercises: agentic troubleshooting, an MCP server for OpenShift and RHACS, and the MCP gateway in Red Hat Connectivity Link."
       - title: "Security and Sovereignty"
         overview: "The patient-portal application is already deployed on local-cluster and aws-us. Students write an RHACM policy for that application, enforce an RHACS runtime rule in the same namespace, attest the nodes and the frontend with ZTWIM, and rotate the frontend Service TLS certificate. Optional sections cover regional governance."
       - title: "Extra: Lightwell and trusted software supply chain"

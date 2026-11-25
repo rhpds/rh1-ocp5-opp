@@ -18,9 +18,9 @@ Throughout this lab, you:
 
 === AI Adoption
 
-* Investigated the cluster with OpenShift Lightspeed troubleshooting, and reviewed update readiness
-* Called cluster and security tools through an MCP server, and checked for an MCP gateway in Red Hat Connectivity Link
-* Ran a notebook on Red Hat OpenShift AI so the AI workload stayed on the cluster
+* Investigated application issues with agentic troubleshooting in OpenShift Lightspeed
+* Called cluster and security APIs through an MCP server
+* Used the MCP gateway for federated access, team isolation, and policy
 
 === Security and Sovereignty
 
@@ -38,7 +38,7 @@ Throughout this lab, you:
 == Key Takeaways
 
 * *Place the workload yourself* -- RHACM puts virtual machines, clusters, and applications on the clusters you choose. OpenShift Lightspeed is the hands-off alternative for that placement.
-* *Keep AI on the platform* -- OpenShift AI runs the workload where the data already lives.
+* *Ask Lightspeed before you change the cluster* -- agentic troubleshooting proposes a fix, and a person still approves it before it runs.
 * *Guardrails limit the attack surface* -- RHACS shows the vulnerability and the runtime behavior, then enforces the policy. RHACM policy keeps a region in bounds.
 * *Identity is the next control* -- Red Hat Zero Trust Workload Identity Manager (ZTWIM) is how containers, virtual machines, and AI applications get multi-factor, keyless access to systems and data.
 * *The image you run should be one you signed* -- a golden base image in Quay, signed with Trusted Artifact Signer, stays inside the platform you manage.
@@ -56,7 +56,7 @@ Throughout this lab, you:
 
 * link:https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes[Red Hat Advanced Cluster Management documentation^]
 * link:https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_security_for_kubernetes[Red Hat Advanced Cluster Security documentation^]
-* link:https://docs.redhat.com/en/documentation/red_hat_openshift_ai_cloud_service[Red Hat OpenShift AI documentation^]
+* link:https://docs.redhat.com/en/documentation/red_hat_openshift_lightspeed[Red Hat OpenShift Lightspeed documentation^]
 * link:https://docs.redhat.com/en/documentation/red_hat_quay[Red Hat Quay documentation^]
 * link:https://docs.sigstore.dev/cosign/overview[Sigstore cosign documentation^]
 
