@@ -16,12 +16,13 @@ By the end of the lab, you'll have a practical blueprint for management and secu
 
 The modules follow that path. Through hands-on activities, you will:
 
-* Place virtual machines and a new cluster on the fleet yourself with Red Hat Advanced Cluster Management (RHACM)
+* Place a new cluster with Red Hat Advanced Cluster Management (RHACM), then create a virtual machine with OpenShift Lightspeed or from a template
+* Troubleshoot and review updates with OpenShift Lightspeed, then call cluster and security tools through an MCP server and the MCP gateway
 * Run an AI workload on Red Hat OpenShift AI, on the cluster where the data already lives
-* Place an application on the right clusters with OpenShift GitOps
+* Write policy for the application already running on the two clusters, attest it, and rotate its TLS certificate
 * Use RHACS to scan for vulnerabilities, watch runtime behavior, and enforce guardrails that limit the attack surface
 * Apply sovereignty policies so regional workloads stay in bounds
-* Build and sign a container image so the supply chain stays under your control
+* Optionally pin a Lightwell rebuild and sign a patient-portal image built from a Universal Base Image
 
 [[prerequisites]]
 == Prerequisites
@@ -34,11 +35,12 @@ Before beginning this lab, you should have:
 [[lab-modules]]
 == Lab Modules
 
-This lab is organized into three modules:
+This lab is organized into three modules, plus an optional extra:
 
-* xref:module-01-virtualization.adoc[Module 1: Virtualization] - Place clusters and virtual machines on the fleet yourself with RHACM
-* xref:module-02-ai-adoption.adoc[Module 2: AI Adoption] - Run an AI workload on OpenShift AI
-* xref:module-03-security-and-sovereignty.adoc[Module 3: Security and Sovereignty] - RHACS scans, runtime guardrails, regional policy, and image signing
+* xref:module-01-virtualization.adoc[Module 1: Virtualization] - Create a virtual machine with OpenShift Lightspeed or from a template, then check compliance and vulnerabilities in RHACS
+* xref:module-02-ai-adoption.adoc[Module 2: AI Adoption] - Agentic troubleshooting, MCP server, MCP gateway, and an OpenShift AI notebook
+* xref:module-03-security-and-sovereignty.adoc[Module 3: Security and Sovereignty] - Policy, workload identity, and certificate rotation for the application that is already running
+* xref:module-04-extra.adoc[Extra] - Lightwell and the trusted software supply chain, about 30 minutes
 * xref:conclusion.adoc[Conclusion] - Summary, key takeaways, and next steps
 
 [[getting-started]]

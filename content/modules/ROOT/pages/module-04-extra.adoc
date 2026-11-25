@@ -1,0 +1,178 @@
+[[extra]]
+= Extra: Lightwell and the trusted software supply chain
+
+This module is optional. Budget about 30 minutes. The first half is Lightwell: a rebuild that keeps the same upstream version and adds a `.rhlw` suffix. The second half is the trusted software supply chain for patient-portal: a Red Hat Universal Base Image in Quay, a rebuild, and a cosign signature from Red Hat Trusted Artifact Signer.
+
+The full Lightwell workshop is ten steps and about two hours. It lives in the OpenShift Security Roadshow as link:https://rhpds.github.io/ocp5-rhacs-showroom/modules/lwjava-INDEX.html[Lightwell Java workshop^]. This module keeps the finding, the pin, and the signature.
+
+[[lightwell]]
+== Lightwell
+
+Lightwell publishes a rebuilt jar on the same version line as the vulnerable release. Woodstox `6.0.3` becomes `6.0.3.rhlw-00001`. That rebuild is the fix for `CVE-2022-40152`. You do not move the application to a newer Spring Boot release.
+
+The roadshow starts from an application named Help, I'm Vulnerable! that Argo CD has already synced as `lightwell-java`. This lab may not include that application. Confirm it. If it is absent, the pin below is still the Lightwell change, and the image you harden next is patient-portal.
+
+.Procedure
+. Look for the Lightwell release:
++
+[source,role="execute"]
+----
+oc -n openshift-gitops get application lightwell-java \
+  -o jsonpath='sync={.status.sync.status}{"\n"}health={.status.health.status}{"\n"}' || true
+oc -n help-im-vulnerable get deploy,route,configmap || true
+----
++
+. If the route exists, read the Woodstox finding:
++
+[source,role="execute"]
+----
+HOST="$(oc -n help-im-vulnerable get route help-im-vulnerable -o jsonpath='{.spec.host}' 2>/dev/null || true)"
+if [ -n "$HOST" ]; then curl -sk "https://${HOST}/api/status" | jq '.[] | select(.library=="Woodstox")'; else echo "help-im-vulnerable is not on this cluster"; fi
+----
++
+A running release reports `version` `6.0.3`, `cves` `CVE-2022-40152`, and `lightwellFix` `6.0.3.rhlw-00001`.
+. These are the pins. Each one stays on the upstream version and adds the Lightwell suffix:
+
+[cols="2,2,2",options="header"]
+|===
+|Coordinate |Vulnerable release |Lightwell pin
+
+|`org.springframework:spring-core`
+|`5.3.18`
+|`5.3.18.rhlw-00010`
+
+|`com.fasterxml.woodstox:woodstox-core`
+|`6.0.3`
+|`6.0.3.rhlw-00001`
+
+|`org.json:json`
+|`20220320`
+|`20220320.0.0.rhlw-00003`
+
+|`com.jayway.jsonpath:json-path`
+|`2.8.0`
+|`2.8.0.rhlw-00001`
+|===
+
+. If the source is already on the bastion, apply those pins. If the directory is missing, skip this step and continue with the patient-portal image.
++
+[source,role="execute"]
+----
+if [ -f "${HOME}/help-im-vulnerable/pom.xml" ]; then
+  cd "${HOME}/help-im-vulnerable"
+  python3 - <<'PY'
+from pathlib import Path
+path = Path("pom.xml")
+text = path.read_text()
+replacements = {
+    ">5.3.18<": ">5.3.18.rhlw-00010<",
+    ">6.0.3<": ">6.0.3.rhlw-00001<",
+    ">20220320<": ">20220320.0.0.rhlw-00003<",
+    ">2.8.0<": ">2.8.0.rhlw-00001<",
+}
+for old, new in replacements.items():
+    if old not in text:
+        raise SystemExit(f"missing {old}")
+    text = text.replace(old, new)
+path.write_text(text)
+print("pins updated")
+PY
+  grep -n -E 'rhlw-00010|rhlw-00001|rhlw-00003' pom.xml
+else
+  echo "Lightwell source is not on this bastion. Continue with the patient-portal image."
+fi
+----
+
+=== Verify
+
+* You can name `CVE-2022-40152` and the Lightwell pin `6.0.3.rhlw-00001`
+* Either `pom.xml` contains those pins, or you recorded that `help-im-vulnerable` is not on this cluster
+
+[[trusted-supply-chain]]
+== Trusted software supply chain
+
+Patient-portal is the image this lab can rebuild. Pull a Universal Base Image into your Quay registry, build the frontend from that image, and sign the result with cosign and Trusted Artifact Signer.
+
+.Procedure
+. Log in to Quay and confirm cosign:
++
+[source,sh,subs="attributes",role="execute"]
+----
+source ~/.bashrc
+cosign version
+podman login https://$QUAY_URL -u $QUAY_USER -p {quay_admin_password}
+----
++
+. Pull a Universal Base Image into your registry. The `--remove-signatures` flag is required because the registry layout changes on push:
++
+[source,sh,subs="attributes",role="execute"]
+----
+source ~/.bashrc
+podman pull registry.access.redhat.com/ubi8/python-312:1-1775513555
+podman tag registry.access.redhat.com/ubi8/python-312:1-1775513555 $QUAY_URL/$QUAY_USER/python-ubi-312:3.12-golden
+podman push --remove-signatures $QUAY_URL/$QUAY_USER/python-ubi-312:3.12-golden
+----
++
+. Rebuild the patient-portal frontend from that image:
++
+[source,sh,subs="attributes",role="execute"]
+----
+cd ~/demo-applications/image-builds/patient-portal-frontend
+sed -i "s|^FROM docker.io/library/python:3.12-slim|FROM $QUAY_URL/$QUAY_USER/python-ubi-312:3.12-golden|g" Dockerfile
+podman build -t $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0 .
+podman push $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
+----
++
+. Point cosign at the Trusted Artifact Signer services in this cluster:
++
+[source,sh,subs="attributes",role="execute"]
+----
+export TUF_URL=$(oc get tuf -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
+export OIDC_ISSUER_URL=$(oc get fulcio -n trusted-artifact-signer -o jsonpath='{.items[0].spec.config.oidcIssuers[0].issuer}' 2>/dev/null)
+if [ -z "$OIDC_ISSUER_URL" ]; then
+  export OIDC_ISSUER_URL=$(oc get fulcio -n trusted-artifact-signer -o jsonpath='{.items[0].spec.config.OIDCIssuers[0].Issuer}' 2>/dev/null)
+fi
+if [ -z "$OIDC_ISSUER_URL" ]; then
+  KK_HOST=$(oc get route keycloak -n keycloak -o jsonpath='{.spec.host}' 2>/dev/null)
+  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/realms/keycloak"; fi
+fi
+export COSIGN_FULCIO_URL=$(oc get fulcio -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
+export COSIGN_REKOR_URL=$(oc get rekor -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
+export COSIGN_MIRROR=$TUF_URL
+export COSIGN_ROOT=$TUF_URL/root.json
+export COSIGN_OIDC_CLIENT_ID="trusted-artifact-signer"
+export COSIGN_OIDC_ISSUER=$OIDC_ISSUER_URL
+export COSIGN_CERTIFICATE_OIDC_ISSUER=$OIDC_ISSUER_URL
+export COSIGN_YES="true"
+cosign initialize
+echo "$OIDC_ISSUER_URL"
+----
++
+. Sign the image. When the terminal prints a browser link, open it and sign in as `jdoe@redhat.com` with password `secure`. Paste the verification code back into the terminal:
++
+[source,sh,subs="attributes",role="execute"]
+----
+cosign login $QUAY_URL -u $QUAY_USER -p {quay_admin_password}
+cosign sign $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
+cosign tree $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
+----
+
+=== Verify
+
+* `python-ubi-312:3.12-golden` is in your Quay project
+* `patient-portal-frontend:1.0` was built `FROM` that image
+* `cosign tree` lists a signature for that image
+
+[NOTE]
+====
+If `~/demo-applications` is missing, clone it before the rebuild:
+
+[source,role="execute"]
+----
+git clone https://github.com/mfosterrox/demo-applications.git ~/demo-applications
+----
+
+If cosign is missing, run `cd ~/svc-lab/tssc-setup && ./setup.sh` when that directory exists. A Lightwell rebuild and this signature are different statements. The `.rhlw` jar is the patched library. The cosign signature is your attestation of the image you pushed.
+====
+
+Proceed to xref:conclusion.adoc[the conclusion], or return to xref:module-03-security-and-sovereignty.adoc#supplementary-modules[the optional regional policies] in Module 3.

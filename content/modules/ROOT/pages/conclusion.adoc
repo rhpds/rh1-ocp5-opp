@@ -11,18 +11,28 @@ Throughout this lab, you:
 
 === Virtualization
 
-* Placed an EMEA Hosted Control Plane and a RHEL virtual machine on the fleet yourself with Red Hat Advanced Cluster Management (RHACM)
+* Placed an EMEA Hosted Control Plane with Red Hat Advanced Cluster Management (RHACM)
+* Created a RHEL virtual machine with OpenShift Lightspeed, or from a template when Lightspeed did not
+* Checked the cluster that hosts the virtual machine with the Compliance Operator and RHACS
+* Reviewed virtual machine vulnerabilities in RHACS, or by asking OpenShift Lightspeed to query RHACS
 
 === AI Adoption
 
+* Investigated the cluster with OpenShift Lightspeed troubleshooting, and reviewed update readiness
+* Called cluster and security tools through an MCP server, and checked for an MCP gateway in Red Hat Connectivity Link
 * Ran a notebook on Red Hat OpenShift AI so the AI workload stayed on the cluster
 
 === Security and Sovereignty
 
-* Placed an application on the local, EMEA, and US clusters with OpenShift GitOps
-* Enforced regional policy with RHACM, including GDPR on EMEA and NIST 800-53 on the US cluster
-* Used RHACS to scan for vulnerabilities, review the results, and kill a pod that broke a runtime guardrail
-* Built and signed a container image with cosign and Red Hat Trusted Artifact Signer
+* Confirmed patient-portal was already running on local-cluster and aws-us
+* Wrote an RHACM policy for that application and an RHACS runtime rule for the same namespace
+* Attested the nodes and the frontend with Zero Trust Workload Identity Manager
+* Issued a TLS certificate for the frontend Service and rotated it
+
+=== Extra
+
+* Pinned a Lightwell rebuild for a known library finding, or confirmed that demo is not on this cluster
+* Rebuilt the patient-portal frontend from a Universal Base Image and signed it with Trusted Artifact Signer
 
 [[key-takeaways]]
 == Key Takeaways

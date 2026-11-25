@@ -2,129 +2,168 @@
 
 = Security and Sovereignty
 
-With the cluster, the virtual machine, and the AI workload in place, this module is sovereignty and security on OpenShift 5. You place the patient-portal application on the right clusters, then use Red Hat Advanced Cluster Security (RHACS) to scan for vulnerabilities, watch runtime behavior, and create guardrails that limit each workload's attack surface. RHACM policies keep regional workloads in bounds. You finish by signing the image you build. The last sections are optional extra governance.
+The patient-portal application is already running on the two clusters in this environment, `local-cluster` and `aws-us`. You do not deploy it in this module. You write policy for that application, give it a workload identity, and issue a TLS certificate that the platform can rotate.
+
+Red Hat Advanced Cluster Management (RHACM) and Red Hat Advanced Cluster Security (RHACS) are the policy tools. Red Hat Zero Trust Workload Identity Manager (ZTWIM) attests each node, then attests the frontend and issues its identity. Lightwell and the trusted software supply chain are in xref:module-04-extra.adoc[the extra module].
+
+[[application-already-placed]]
+== The application is already placed
+
+OpenShift GitOps has already placed patient-portal on `local-cluster` and `aws-us`. Confirm both copies before you write policy for them.
+
+.Procedure
+. In *Fleet Management*, open *Applications* and find `skupper-patient-demo`. Both `local-cluster` and `aws-us` should show the application as healthy.
++
+image::03-app-complete.png[Application placement for patient-portal,link=self,window=blank,width=100%]
++
+. In the terminal, confirm the frontend on each cluster:
++
+[source,role="execute"]
+----
+oc --context local-cluster get deploy,svc,route -n patient-portal
+oc --context aws-us get deploy,svc,route -n patient-portal
+----
+
+=== Verify
+
+* `frontend` is listed on `local-cluster`
+* `frontend` is listed on `aws-us`
+* You did not create a new ApplicationSet
 
 [NOTE]
 ====
-Red Hat Zero Trust Workload Identity Manager (ZTWIM) is how containers, virtual machines, and AI applications get multi-factor, keyless access to systems and data. The guardrails in this module are the RHACS and RHACM controls around those workloads.
+If a context name differs, run `oc config get-contexts` and use the context for that cluster. If `patient-portal` is missing on one cluster, stay on the cluster where it is present for the policy, identity, and certificate steps. Do not recreate the application from the wizard.
 ====
 
-[[container-workloads]]
-== Deploy and Manage Container Workloads via OpenShift GitOps
+[[application-policy]]
+== Policy for the patient-portal application
 
-OpenShift GitOps (using Argo CD and RHACM) lets you deploy and manage apps across clusters using Git as your source of truth.
-
-There are two main ways clusters get updates from Git: 
-- In pull mode, each cluster gets its own updates, making things more secure and keeping everything within specific regions.
-- In push mode, a central tool sends updates out to clusters.
-
-For this lab, you’ll use the push model (with Argo CD already set up), so you can see how easy it is to deploy and manage apps with GitOps -- even across multiple clusters in different locations.
-
-[[deploy-applications-using-openshift-gitops]]
-
-== Multi-environment Application Deployment and Management
-
-*Sovereign operations mean you decide which clusters run the application.*
-
-In this next step, you'll use Red Hat OpenShift GitOps with Argo CD to place the demo application on the local cluster, the EMEA cluster, and the AWS US cluster.
-
-That placement keeps the application on the clusters you approved.
+The policy in this exercise describes the application, not the whole fleet. RHACM checks both clusters. Later in this module, RHACS enforces a runtime rule on the same namespace.
 
 .Procedure
-. From the **Fleet Management** tab, navigate to *Applications* from the left side menu.
-. Click *Create application*, select *ArgoCD ApplicationSet - Push Model*.
-. Enter the following information: `skupper-patient-demo`
+. From the Fleet Management console, click the *+* and select *Import YAML*.
 +
-[source,sh,subs="attributes",role=execute]
+image::02-rhacm-yaml.png[RHACM Import YAML interface,link=self,window=blank,width=100%]
++
+. Paste this policy and click *Create*. It starts in `inform` so you can see the result before anything changes.
++
+[source,role="execute"]
 ----
-skupper-patient-demo
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-patient-portal
+  namespace: policies
+  annotations:
+    policy.open-cluster-management.io/standards: NIST-800-53
+    policy.open-cluster-management.io/categories: Application Guardrails
+    policy.open-cluster-management.io/controls: Patient Portal
+spec:
+  remediationAction: inform
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: patient-portal-namespace
+        spec:
+          remediationAction: inform
+          severity: high
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: patient-portal
+                  labels:
+                    app: patient-portal
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: patient-portal-frontend-ingress
+        spec:
+          remediationAction: inform
+          severity: medium
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: networking.k8s.io/v1
+                kind: NetworkPolicy
+                metadata:
+                  name: patient-portal-frontend
+                  namespace: patient-portal
+                spec:
+                  podSelector:
+                    matchLabels:
+                      app: frontend
+                  policyTypes:
+                    - Ingress
+                  ingress:
+                    - ports:
+                        - protocol: TCP
+                          port: 8080
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-policy-patient-portal
+  namespace: policies
+spec:
+  clusterSets:
+    - global
+    - managed
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: name
+              operator: In
+              values:
+                - local-cluster
+                - aws-us
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-patient-portal
+  namespace: policies
+placementRef:
+  name: placement-policy-patient-portal
+  kind: Placement
+  apiGroup: cluster.open-cluster-management.io
+subjects:
+  - name: policy-patient-portal
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
 ----
 +
-. Open the *Argo server* dropdown and select *Add Argo Server*
+. Open *Governance* -> *Policies*. Filter to the `policies` namespace and open `policy-patient-portal`.
+. Read the status for `local-cluster` and `aws-us`. `inform` reports drift and does not create the NetworkPolicy.
+. Select the policy, then *Actions* -> *Remediation* -> *Enforce*.
 +
-image::13-argo.png[link=self, window=blank, width=100%, ArgoCD Create]
-+
-. Enter the following information:
-* *Name:* `openshift-gitops-global`
-+
-[source,sh,subs="attributes",role=execute]
-----
-openshift-gitops-global
-----
-+
-* *Namespace:* `openshift-gitops` (select from dropdown)
-* *ClusterSet:* `global` (remove `default`)
-+
-[IMPORTANT]
-====
-In the next step, ensure Cluster set is set to `global`, otherwise you will have issues in the next steps.
-====
-+
-image::03-argoconfig.png[link=self, window=blank, width=100%, ArgoCD Config]
+image::02-rhacm-yaml-4.png[Policy remediation set to enforce,link=self,window=blank,width=100%]
 
-. Click *Add*
-. Select your newly registered ArgoCD server from the *Argo server* dropdown
-+
-image::03-app-gitops.png[link=self, window=blank, width=100%, App GitOps]
-+
-. Click *Next* to continue to 3. Repository.
-. Under repository types, select the *Git* repository type
-. Enter the URL and select *Create new option* for the Repository URL
-+
-[source,sh,subs="attributes",role=execute]
+=== Verify
+
+[source,role="execute"]
 ----
-https://github.com/mfosterrox/demo-applications.git
-----
-. Enter revision `main` and select *Create new option* for the Revision
-. Select *Path* from the dropdown (if you don't see anything in the dropdown make sure you created new options in the previous steps):
-+
-[source,sh,subs="attributes",role=execute]
-----
-skupper-demo
+oc --context local-cluster get networkpolicy patient-portal-frontend -n patient-portal
+oc --context aws-us get networkpolicy patient-portal-frontend -n patient-portal
 ----
 
-. Set Destination:
-+
-[source,sh,subs="attributes",role=execute]
-----
-patient-portal
-----
-. Then click *Next* to continue to 5. Placement.
-+
-image::03-app-gitops-2.png[link=self, window=blank, width=100%, App ACM GitOps]
-+
-. Click *Next*
-. Under *Placement*, verify that *New Placement* is selected.
-* *Cluster set:* Select `global`
-. Under *Label expressions* click *Add label expression* and select the following
-* *Label:* name
-* *Operator:* equals any of
-* *Values:* aws-us, local-cluster, emea-cluster
-. Uncheck the *Set a limit on the number of clusters selected*.
-+
-[IMPORTANT]
-====
-The *Cluster* set needs to be set to Global and the label values to be present in the placement rule, otherwise the application will not be deployed to the correct clusters.
-====
-+
-. Verify all of the information is correct and click *Submit*.
+* The policy is bound to `local-cluster` and `aws-us`
+* After enforce, `patient-portal-frontend` exists in the `patient-portal` namespace on both clusters
+* The frontend deployment is still running
 
-[INFO]
-====
-If all steps were followed, you will be able to see the application deployed with all green checkmarks
-====
-
-NOTE: This may take 5ish minutes to complete so feel free to continue to the next section.
-
-image::03-app-complete.png[link=self, window=blank, width=100%, ACM App Placement US]
-
-[[application-deployment-takeaway]]
-=== Application Deployment Takeaway
-
-* **Consistent app deployment** -- Deploy and update applications to multiple clusters using Git-backed automation with OpenShift GitOps and RHACM.
+The RHACS half of this policy work is xref:#use-policy-as-code-block-anomalous-runtime[the runtime rule] later in this module. It watches the same patient-portal workload and stops a pod that runs a package manager. Cluster-wide compliance scans stay in Module 1.
 
 [[security-through-policy-guardrails]]
-== Security Through Policy Guardrails
+== Optional: regional policies
+
+The patient-portal policy above is the required guardrail. The steps in this section add regional examples on the EMEA cluster. Skip them if that cluster is still provisioning.
 
 *Sovereignty is confidence that each workload stays inside the boundary you set.*
 
@@ -490,6 +529,8 @@ Red Hat Advanced Cluster Security (RHACS) includes built-in policies that detect
 
 == Use Policy-as-Code to Block Anomalous Behavior at Runtime
 
+This is the RHACS policy for patient-portal. It matches the application you already confirmed on `local-cluster` and `aws-us`.
+
 Package managers such as apt, apk, yum, and dnf are useful on virtual machines, but they have no place in production containers. Allowing them widens the attack surface. The guardrail in this exercise kills the pod when that happens.
 
 *Policy-as-Code is an effective way to scale this across your global environments.*
@@ -658,380 +699,264 @@ image::acs-violations-02.png[link=self, window=blank, width=100%, Violations Men
 If configured properly, each violation record should be pushed to a Security Information and Event Management (SIEM) application and is available to be retrieved via the API. The forensic data shown in the UI is recorded, including the timestamp, process user IDs, process arguments, process ancestors, and enforcement action.
 ====
 
-**Hey! Great job! Continue with Technology and Supply Chain below.**
+**Hey! Great job! Continue with workload identity and certificates.**
 
 image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ODhkZThkZXVxb2twdHloazAzc2VhNWJpeWowenRpeTJoczY3MTAyZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/RIjVnmAtOD4l4c2Ert/giphy.gif[Fun celebration, link=self, window=blank, width=400]
 
-[[technology-supply-chain]]
+[[workload-identity]]
+== Attest the node and the application
 
-== Technology and Supply Chain
+ZTWIM is already installed. It attests in two steps, and the second step only works after the first one succeeds.
 
-[[module-goals]]
+* *Node.* Each SPIRE agent proves the node it runs on with a Kubernetes projected service account token. The server checks that token and issues an agent SVID. The SPIFFE ID contains `k8s_psat`.
+* *Workload.* The agent on that node inspects the pod: namespace, service account, and labels. A `ClusterSPIFFEID` says which of those pods may receive an identity. The workload entry lists the attested node as its parent.
 
-== Module Goals
-
-*Own the image that runs on OpenShift 5.*
-
-Pull a golden base image into your registry, rebuild the application from it, and sign the result. That is how the supply chain stays inside the platform you manage.
-
-[[setup]]
-== Installation and Setup
-
-First, we need to set up the applications for this module.
+ZTWIM enforces that issuance. It does not sit on the network, so a plain connection to patient-portal still succeeds. A connection that requires the attested certificate does not succeed until the workload is registered and the node is attested. OpenShift Service Mesh can apply that rule to every pod. This lab does not install the mesh. You will test the same rule on the frontend identity talking to itself.
 
 .Procedure
-. Switch to the *Terminal* tab on the right and run the following command to check if cosign is already installed and login to your Quay instance.
+. Confirm both attestors are enabled:
 +
-[source,sh,subs="attributes",role=execute]
+[source,role="execute"]
 ----
-source ~/.bashrc
-cosign version
-podman login https://$QUAY_URL -u $QUAY_USER -p {quay_admin_password}
+oc get spireagent cluster -n zero-trust-workload-identity-manager -o yaml
 ----
 +
-.Sample Output
-[source,bash,subs="+macros,+attributes"]
+`nodeAttestor.k8sPSATEnabled` is `true`. `workloadAttestors.k8sEnabled` is `true`.
+. List the nodes SPIRE has attested:
++
+[source,role="execute"]
 ----
-[INFO] Cosign installed successfully:
-  ______   ______        _______. __    _______ .__   __.
- /      | /  __  \      /       ||  |  /  _____||  \ |  |
-|  ,----'|  |  |  |    |   (----`|  | |  |  __  |   \|  |
-|  |     |  |  |  |     \   \    |  | |  | |_ | |  . `  |
-|  `----.|  `--'  | .----)   |   |  | |  |__| | |  |\   |
- \______| \______/  |_______/    |__|  \______| |__| \__|
-cosign: A tool for Container Signing, Verification and Storage in an OCI registry.
-
-GitVersion:    5c43d256
-GitCommit:     5c43d256f1391f505ada9f9c46c3e31b6e219c8e
-GitTreeState:  clean
-BuildDate:     2025-11-19T10:04:54Z
-GoVersion:     go1.24.6 (Red Hat 1.24.6-1.el9_6) X:strictfipsruntime
-Compiler:      gc
-Platform:      linux/amd64
-
-[INFO] Gitsign installed successfully:
-gitsign version v0.0.0-20251119095025-6ae9439418bc+dirty
-parsed config:
-{
-  "Fulcio": "https://fulcio.sigstore.dev",
-  "FulcioRoot": "",
-  "Rekor": "https://rekor.sigstore.dev",
-
+SPIRE_POD=$(oc get pod -n zero-trust-workload-identity-manager -l app.kubernetes.io/name=spire-server -o jsonpath='{.items[0].metadata.name}')
+oc exec -n zero-trust-workload-identity-manager "$SPIRE_POD" -c spire-server -- \
+  /opt/spire/bin/spire-server agent show -socketPath /tmp/spire-server/private/api.sock
 ----
 +
-IMPORTANT: If cosign is not installed, please run the following command to install it in the Terminal tab on the right.
+Each block is one node. Copy one `SPIFFE ID`. It looks like `spiffe://<trust-domain>/spire/agent/k8s_psat/cluster/<node uid>`. The selectors include `k8s_psat:cluster` and the node name.
+. Register the patient-portal frontend. This is the workload attestation rule:
 +
-[source,sh,subs="attributes",role=execute]
+[source,role="execute"]
 ----
-cd ~/svc-lab/tssc-setup && ./setup.sh
+oc apply -f - <<'EOF'
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: patient-portal-frontend
+spec:
+  className: zero-trust-workload-identity-manager-spire
+  ttl: 1h
+  dnsNameTemplates:
+    - frontend-service.patient-portal.svc
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: patient-portal
+  podSelector:
+    matchLabels:
+      app: frontend
+  spiffeIDTemplate: 'spiffe://{{ .TrustDomain }}/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}'
+EOF
+----
++
+. Show the workload entry and the node it is pinned to:
++
+[source,role="execute"]
+----
+oc exec -n zero-trust-workload-identity-manager "$SPIRE_POD" -c spire-server -- \
+  /opt/spire/bin/spire-server entry show \
+  -socketPath /tmp/spire-server/private/api.sock \
+  -selector k8s:ns:patient-portal
+----
++
+The selectors include `k8s:ns:patient-portal`, `k8s:sa:default`, and the frontend pod label. `Parent ID` is one of the agent SPIFFE IDs from the node list. That parent is the attested node. A pod receives this identity only when it is running on a node SPIRE has already attested and its labels match this entry. The pod labeled `app=unattested` does not match, so ZTWIM does not issue it a certificate.
+. Give the attested frontend a certificate on disk, and start a second pod that does not match the registration. SPIFFE Helper writes the certificate only when ZTWIM attests the pod:
++
+[source,role="execute"]
+----
+HELPER_IMAGE=$(oc get csv -n zero-trust-workload-identity-manager -o json | jq -r '[.items[].spec.relatedImages[]?.image | select(test("spiffe-helper"))][0]')
+echo "SPIFFE Helper image: ${HELPER_IMAGE}"
+oc --context local-cluster apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spiffe-helper
+  namespace: patient-portal
+data:
+  helper.conf: |
+    agent_address = "/spiffe-workload-api/spire-agent.sock"
+    cert_dir = "/opt/spiffe-certs"
+    svid_file_name = "svid.pem"
+    svid_key_file_name = "svid.key"
+    svid_bundle_file_name = "svid_bundle.pem"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: patient-portal-identity
+  namespace: patient-portal
+  labels:
+    app: frontend
+spec:
+  serviceAccountName: default
+  containers:
+  - name: identity
+    image: registry.redhat.io/ubi9/ubi:latest
+    command: ["sleep", "infinity"]
+    volumeMounts:
+    - name: spiffe-workload-api
+      mountPath: /spiffe-workload-api
+      readOnly: true
+    - name: spiffe-certs
+      mountPath: /opt/spiffe-certs
+  - name: spiffe-helper
+    image: ${HELPER_IMAGE}
+    args: ["-config", "/etc/spiffe-helper/helper.conf"]
+    volumeMounts:
+    - name: spiffe-workload-api
+      mountPath: /spiffe-workload-api
+      readOnly: true
+    - name: spiffe-certs
+      mountPath: /opt/spiffe-certs
+    - name: spiffe-helper
+      mountPath: /etc/spiffe-helper
+  volumes:
+  - name: spiffe-workload-api
+    csi:
+      driver: csi.spiffe.io
+      readOnly: true
+  - name: spiffe-certs
+    emptyDir: {}
+  - name: spiffe-helper
+    configMap:
+      name: spiffe-helper
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: patient-portal-unattested
+  namespace: patient-portal
+  labels:
+    app: unattested
+spec:
+  serviceAccountName: default
+  containers:
+  - name: identity
+    image: registry.redhat.io/ubi9/ubi:latest
+    command: ["sleep", "infinity"]
+    volumeMounts:
+    - name: spiffe-certs
+      mountPath: /opt/spiffe-certs
+  - name: spiffe-helper
+    image: ${HELPER_IMAGE}
+    args: ["-config", "/etc/spiffe-helper/helper.conf"]
+    volumeMounts:
+    - name: spiffe-workload-api
+      mountPath: /spiffe-workload-api
+      readOnly: true
+    - name: spiffe-certs
+      mountPath: /opt/spiffe-certs
+    - name: spiffe-helper
+      mountPath: /etc/spiffe-helper
+  volumes:
+  - name: spiffe-workload-api
+    csi:
+      driver: csi.spiffe.io
+      readOnly: true
+  - name: spiffe-certs
+    emptyDir: {}
+  - name: spiffe-helper
+    configMap:
+      name: spiffe-helper
+EOF
+oc --context local-cluster wait --for=condition=Ready pod/patient-portal-identity -n patient-portal --timeout=180s || true
+----
++
+. On the attested pod, require a client certificate and talk to that listener from the same workload. The call with the SVID succeeds. The call without it fails:
++
+[source,role="execute"]
+----
+oc --context local-cluster exec -n patient-portal patient-portal-identity -c identity -- \
+  bash -c 'for i in $(seq 1 30); do [ -f /opt/spiffe-certs/svid.pem ] && break; sleep 2; done; ls -l /opt/spiffe-certs'
+oc --context local-cluster exec -n patient-portal patient-portal-identity -c identity -- \
+  bash -c 'openssl s_server -accept 8443 -cert /opt/spiffe-certs/svid.pem -key /opt/spiffe-certs/svid.key -CAfile /opt/spiffe-certs/svid_bundle.pem -Verify 1 >/tmp/tls.log 2>&1 & sleep 1; echo | openssl s_client -connect 127.0.0.1:8443 -cert /opt/spiffe-certs/svid.pem -key /opt/spiffe-certs/svid.key -CAfile /opt/spiffe-certs/svid_bundle.pem -quiet; echo "--- no client certificate ---"; echo | openssl s_client -connect 127.0.0.1:8443 -CAfile /opt/spiffe-certs/svid_bundle.pem || true'
+----
++
+. Confirm the unattested pod never receives a certificate:
++
+[source,role="execute"]
+----
+oc --context local-cluster exec -n patient-portal patient-portal-unattested -c identity -- \
+  bash -c 'sleep 10; ls /opt/spiffe-certs || true'
+oc --context local-cluster logs -n patient-portal patient-portal-unattested -c spiffe-helper --tail=20 || true
 ----
 
-[[getting-your-golden-image]]
-== Getting your golden image
+=== Verify
 
-Having your own golden image ensures you have full control and visibility over the software components included, significantly reducing security risks and supply chain vulnerabilities. By downloading and building golden images yourself, you guarantee provenance and compliance tailored to your organization's requirements. Ownership of these images allows for faster recovery, reproducibility, and assurance that no unapproved changes or dependencies are introduced into your environments.
+* `agent show` lists a SPIFFE ID containing `k8s_psat` for the nodes in this cluster
+* `entry show` for `k8s:ns:patient-portal` lists the frontend selectors
+* The workload `Parent ID` matches an attested node from `agent show`
+* The attested pod has `svid.pem`, and mutual TLS to `127.0.0.1:8443` with that certificate succeeds
+* The same listener rejects a client that does not present the certificate
+* `patient-portal-unattested` has no `svid.pem`. Its helper log says the workload was not issued an identity
 
-We'll be building a python based application to demonstrate the signing and verification process. 
+[NOTE]
+====
+If `agent show` cannot open the socket, read the path from the server config and rerun the command with that path:
+
+[source,role="execute"]
+----
+oc exec -n zero-trust-workload-identity-manager "$SPIRE_POD" -c spire-server -- \
+  grep socket_path /opt/spire/config/server.conf
+----
+
+If `HELPER_IMAGE` is empty, or either pod stays in `ContainerCreating` because `csi.spiffe.io` is not on the node, keep the `ClusterSPIFFEID` and the entry you already listed. The node attestation and the workload registration are still in SPIRE. The certificate steps below issue a TLS certificate for the frontend Service. Plain traffic to the patient-portal frontend on port 8080 is unchanged, because that application does not require the SVID.
+====
+
+[[application-certificates]]
+== Certificates and rotation
+
+The frontend Service needs a TLS certificate, and that certificate has to be replaced before it expires. OpenShift service CA does both. It writes `tls.crt` and `tls.key` into a secret and issues a new certificate when that secret is removed or the certificate approaches expiry.
+
+ZTWIM rotates the workload SVID on the TTL you set (`1h` on `patient-portal-frontend`). This exercise rotates the Service certificate so you can see a new serial in this session.
 
 .Procedure
-. First, let's download and push a public image to your Quay instance. Run the following commands in the terminal:
+. On the cluster where the frontend Service exists, ask the service CA for a certificate:
 +
-[source,sh,subs="attributes",role=execute]
+[source,role="execute"]
 ----
-source ~/.bashrc
-podman pull registry.access.redhat.com/ubi8/python-312:1-1775513555
-podman tag registry.access.redhat.com/ubi8/python-312:1-1775513555 $QUAY_URL/$QUAY_USER/python-ubi-312:3.12-golden
-podman push --remove-signatures $QUAY_URL/$QUAY_USER/python-ubi-312:3.12-golden
+oc --context local-cluster annotate service frontend-service -n patient-portal \
+  service.beta.openshift.io/serving-cert-secret-name=frontend-serving-cert --overwrite
+oc --context local-cluster get secret frontend-serving-cert -n patient-portal
 ----
 +
-UBI images from Red Hat carry signatures; pushing to another registry may change layer layout, so `--remove-signatures` avoids the error _Would invalidate signatures_. You are still pushing the same image content.
-
-You now have a container image in the local Quay registry.
-
-[[rebuilding-the-patient-portal-frontend]]
-== Rebuilding the Patient Portal Frontend
-
-.Procedure
-. Go to the `patient-portal-frontend` build directory in the Terminal tab on the right:
+. Record the serial and the expiry:
 +
-[source,sh,subs="attributes",role=execute]
+[source,role="execute"]
 ----
-cd ~/demo-applications/image-builds/patient-portal-frontend
+oc --context local-cluster get secret frontend-serving-cert -n patient-portal \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -subject -issuer -serial -dates
 ----
-
-. Replace both `FROM` lines so the build uses your Quay golden image instead of Docker Hub:
 +
-[source,sh,subs="attributes",role=execute]
+. Rotate it. Deleting the secret causes the service CA to issue a replacement.
++
+[source,role="execute"]
 ----
-sed -i "s|^FROM docker.io/library/python:3.12-slim|FROM $QUAY_URL/$QUAY_USER/python-ubi-312:3.12-golden|g" Dockerfile
+oc --context local-cluster delete secret frontend-serving-cert -n patient-portal
+until oc --context local-cluster get secret frontend-serving-cert -n patient-portal >/dev/null 2>&1; do sleep 2; done
+oc --context local-cluster get secret frontend-serving-cert -n patient-portal \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -serial -dates
 ----
 
-. Build the frontend container image:
-+
-[source,sh,subs="attributes",role=execute]
-----
-podman build -t $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0 .
-----
+=== Verify
 
-. Push the image to your Quay instance:
-+
-[source,sh,subs="attributes",role=execute]
-----
-podman push $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
-----
+* The first command prints a subject, an issuer, a serial, and a notAfter date
+* After the secret is deleted, a new secret appears and the serial is different
+* `patient-portal-frontend` still has `ttl: 1h`, which is the rotation interval for the workload identity
 
-[[signing-your-software]]
+[NOTE]
+====
+If `frontend-service` is not on `local-cluster`, run the same commands with `--context aws-us`. If cert-manager is also installed, leave it alone. The service CA is the rotation path for this application.
+====
 
-== Signing Your Software
-
-For signing and verification of container images, we'll be using the `cosign` CLI binary, which has already been installed in the terminal tab on the right.
-
-`cosign` can easily be used in any CI/CD toolchain as we use it here and handles all the communication with the Sigstore / Trusted Artifact Signer services that request certificates, handle the OIDC authentication, store info in the transparency log (Rekor), etc.
-
-. Run the following command in the terminal:
-+
-[source,sh,subs="attributes",role=execute]
-----
-cosign version
-----
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-  ______   ______        _______. __    _______ .__   __.
- /      | /  __  \      /       ||  |  /  _____||  \ |  |
-|  ,----'|  |  |  |    |   (----`|  | |  |  __  |   \|  |
-|  |     |  |  |  |     \   \    |  | |  | |_ | |  . `  |
-|  `----.|  `--'  | .----)   |   |  | |  |__| | |  |\   |
- \______| \______/  |_______/    |__|  \______| |__| \__|
-cosign: A tool for Container Signing, Verification and Storage in an OCI registry.
-
-GitVersion:    5c43d256
-GitCommit:     5c43d256f1391f505ada9f9c46c3e31b6e219c8e
-GitTreeState:  clean
-BuildDate:     2025-11-19T10:04:54Z
-GoVersion:     go1.24.6 (Red Hat 1.24.6-1.el9_6) X:strictfipsruntime
-Compiler:      gc
-Platform:      linux/amd64
-----
-+
-
-. Run the following commands in the terminal to set the environment variables for `cosign`:
-+
-[source,sh,subs="attributes",role=execute]
-----
-export TUF_URL=$(oc get tuf -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
-# Issuer must match Fulcio's configured OIDC issuer (path may be /realms/... or /auth/realms/...).
-export OIDC_ISSUER_URL=$(oc get fulcio -n trusted-artifact-signer -o jsonpath='{.items[0].spec.config.oidcIssuers[0].issuer}' 2>/dev/null)
-if [ -z "$OIDC_ISSUER_URL" ]; then
-  export OIDC_ISSUER_URL=$(oc get fulcio -n trusted-artifact-signer -o jsonpath='{.items[0].spec.config.OIDCIssuers[0].Issuer}' 2>/dev/null)
-fi
-if [ -z "$OIDC_ISSUER_URL" ]; then
-  export OIDC_ISSUER_URL=$(oc get securesign -n trusted-artifact-signer -o jsonpath='{.items[0].spec.fulcio.config.oidcIssuers[0].issuer}' 2>/dev/null)
-fi
-if [ -z "$OIDC_ISSUER_URL" ]; then
-  export OIDC_ISSUER_URL=$(oc get securesign -n trusted-artifact-signer -o jsonpath='{.items[0].spec.fulcio.config.OIDCIssuers[0].Issuer}' 2>/dev/null)
-fi
-if [ -z "$OIDC_ISSUER_URL" ]; then
-  KK_HOST=$(oc get route keycloak -n keycloak -o jsonpath='{.spec.host}' 2>/dev/null)
-  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/realms/keycloak"; fi
-fi
-if [ -z "$OIDC_ISSUER_URL" ]; then
-  KK_HOST=$(oc get route keycloak -n rhsso -o jsonpath='{.spec.host}' 2>/dev/null)
-  if [ -n "$KK_HOST" ]; then export OIDC_ISSUER_URL="https://${KK_HOST}/auth/realms/keycloak"; fi
-fi
-export COSIGN_FULCIO_URL=$(oc get fulcio -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
-export COSIGN_REKOR_URL=$(oc get rekor -o jsonpath='{.items[0].status.url}' -n trusted-artifact-signer)
-export COSIGN_MIRROR=$TUF_URL
-export COSIGN_ROOT=$TUF_URL/root.json
-export COSIGN_OIDC_CLIENT_ID="trusted-artifact-signer"
-export COSIGN_OIDC_ISSUER=$OIDC_ISSUER_URL
-export COSIGN_CERTIFICATE_OIDC_ISSUER=$OIDC_ISSUER_URL
-export COSIGN_YES="true"
-export SIGSTORE_FULCIO_URL=$COSIGN_FULCIO_URL
-export SIGSTORE_OIDC_ISSUER=$COSIGN_OIDC_ISSUER
-export SIGSTORE_REKOR_URL=$COSIGN_REKOR_URL
-export REKOR_REKOR_SERVER=$COSIGN_REKOR_URL
-echo "$OIDC_ISSUER_URL"
-env | grep URL
-----
-+
-. As the last step, initialize `cosign` so it knows who to talk to. Run the following command in the terminal
-+
-[source,sh,subs="attributes",role=execute]
-----
-cosign initialize
-----
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-[lab-user@bastion ~]$ cosign initialize
-Root status: 
- {
-        "local": "/home/lab-user/.sigstore/root",
-        "remote": "https://tuf-trusted-artifact-signer.apps.cluster-l2ktc.l2ktc.sandbox75.opentlc.com",
-        "metadata": {
-                "root.json": {
-                        "version": 1,
-                        "len": 2178,
-                        "expiration": "13 Jun 25 16:39 UTC",
-                        "error": ""
-                },
-                "snapshot.json": {
-                        "version": 1,
-                        "len": 618,
-                        "expiration": "13 Jun 25 16:39 UTC",
-                        "error": ""
-                },
-                "targets.json": {
-                        "version": 1,
-                        "len": 1372,
-                        "expiration": "13 Jun 25 16:39 UTC",
-                        "error": ""
-                },
-                "timestamp.json": {
-                        "version": 1,
-                        "len": 619,
-                        "expiration": "13 Jun 25 16:39 UTC",
-                        "error": ""
-                }
-        },
-        "targets": [
-                "ctfe.pub",
-                "fulcio_v1.crt.pem",
-                "rekor.pub"
-        ]
-}
-----
-
-Cryptographic signing lets you control which container images can run in your environment, making sure only trusted, verified images are used.
-
-`cosign` will be interacting with the image in our private registry, therefore we need to log in to Quay.
-
-*Procedure*
-
-. Run the following command in the terminal:
-+
-[source,sh,subs="attributes",role=execute]
-----
-cosign login $QUAY_URL -u $QUAY_USER -p {quay_admin_password}
-----
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-WARNING! Your credentials are stored unencrypted in '/home/lab-user/.docker/config.json'.
-Configure a credential helper to remove this warning. See
-https://docs.docker.com/go/credential-store/
-
-logged in via /home/lab-user/.docker/config.json
-----
-
-. Run the following command in the terminal:
-+
-[source,sh,subs="attributes",role=execute]
-----
-cosign tree $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
-----
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-[lab-user@bastion ~]$ cosign tree $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
-📦 Supply Chain Security Related artifacts for an image: quay.apps.cluster-m2mgb.dyn.redhatworkshops.io/quayadmin/patient-portal-frontend:1.0
-No Supply Chain Security Related Artifacts artifacts found for image quay.apps.cluster-m2mgb.dyn.redhatworkshops.io/quayadmin/patient-portal-frontend:1.0
-, start creating one with simply running$ cosign sign <img>
-----
-
-. As `cosign` suggests, signing this image is as simple as the following. Run the following command in the terminal:
-+
-[source,sh,subs="attributes",role=execute]
-----
-cosign sign $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
-----
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-[lab-user@bastion ~]$ cosign sign $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
-Generating ephemeral keys...
-Retrieving signed certificate...
-
-        Note that there may be personally identifiable information associated with this signed artifact.
-        This may include the email address associated with the account with which you authenticate.
-        This information will be used for signing this artifact and will be stored in public transparency logs and cannot be removed later.
-
-By typing 'y', you attest that you grant (or have permission to grant) and agree to have this information stored permanently in transparency logs.
-error opening browser: exec: "xdg-open": executable file not found in $PATH
-Go to the following link in a browser:
-
-         https://sso.apps.<your-cluster>.<domain>/realms/keycloak/protocol/openid-connect/auth?access_type=online&client_id=trusted-artifact-signer&code_challenge=...
-Enter verification code:
-----
-+
-. Copy the URL and paste it in a new browser window or tab and log in. Use the following user credentials:
-+
-[cols="2,2"]
-|===
-| *Username:* | *jdoe@redhat.com*
-| *Password:* | *secure*
-|===
-+
-NOTE: As mentioned above, the signing process ties an identity (an OIDC identity, to be specific) to the signature. The signing certificate is issued on demand, but *only issued if an OIDC identity proof can be established*.
-+
-image::11-signing-sso-login.png[Keycloak SSO login page, link=self, window=blank]
-+
-image::11-signing-successcode.png[Copy the verification success code, link=self, window=blank]
-+
-TIP: Make sure to copy the whole code, as it is longer than the text box.
-+
-NOTE: You may have to run `rm -rf ~/.sigstore` if you get a cache error.
-
-. Copy the verification code and paste it in the terminal:
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-Enter verification code: 3cc0c9fc-db2e-4920-ba2e-7adac8c685cb.6309e23d-facd-4bca-8855-0443a3c4ddf5.d8370879-39c7-41ec-99ab-669101e99f91
-
-Successfully verified SCT...
-WARNING: Image reference quay-l2ktc.apps.cluster-l2ktc.l2ktc.sandbox75.opentlc.com/quayadmin/patient-portal-frontend:1.0 uses a tag, not a digest, to identify the image to sign.
-    This can lead you to sign a different image than the intended one. Please use a
-    digest (example.com/ubuntu@sha256:abc123...) rather than tag
-    (example.com/ubuntu:latest) for the input to cosign. The ability to refer to
-    images by tag will be removed in a future release.
-
-tlog entry created with index: 1
-Pushing signature to: quay-l2ktc.apps.cluster-l2ktc.l2ktc.sandbox75.opentlc.com/quayadmin/patient-portal-frontend:1.0
-----
-+
-*SUCCESS!*
-+
-With one command, you have signed the container image in the quay registry. Furthermore, the signing event and its metadata have been recorded in the *Rekor* transparency log: `tlog entry created with index: 1`.
-
-. To check, we can again use `cosign tree`. Run the following command in the terminal:
-+
-[source,sh,subs="attributes",role=execute]
-----
-cosign tree $QUAY_URL/$QUAY_USER/patient-portal-frontend:1.0
-----
-+
-[.console-output]
-[source,bash,subs="+macros,+attributes"]
-----
-📦 Supply Chain Security Related artifacts for an image: quay.apps.cluster-m2mgb.dyn.redhatworkshops.io/quayadmin/patient-portal-frontend:1.0
-└── 🔐 Signatures for an image tag: quay.apps.cluster-m2mgb.dyn.redhatworkshops.io/quayadmin/patient-portal-frontend:sha256-22f99a3899129e277d305e187c8d24180c14a050d91455bd3369911f366c4dfb.sig
-   └── 🍒 sha256:c20e35a851fe1f348be662e94f3095edfe85955d1d7b9ee8de2afbfc3c94f7e2
-----
-+
-> We can also view the signature in the Quay console. Head over to the console with username `quayadmin` and password `{quay_admin_password}`. check out the patient-portal-frontend image and you will see the signature.
-+
-image::11-quay-signed-image.png[Quay console showing signed container image, link=self, window=blank, width=100%]
-
-*You're crushing it!*
-
-image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MzBvNTN6eWR3MHF0eWNoZTI0eTVvMmRrZTMzaW4xbGIwOXJhZTJwMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kAUtsLfsEfqaJRwe80/giphy.gif[Celebration, width=400, link=self, window=blank]
+Proceed to xref:module-04-extra.adoc[Extra: Lightwell and the trusted software supply chain] when you want the hardened image and the signature. The sections below are more regional policy examples. You can skip them.
 
 [[supplementary-modules]]
 
@@ -1039,7 +964,7 @@ image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MzBvNTN6eWR3MHF0eWNoZTI0
 
 [NOTE]
 ====
-The sections from here through the end of this module are optional. The main path is complete once you have signed the patient-portal image. Use this material when you want additional governance practice.
+The sections from here through the end of this module are optional. The main path is complete once the application policy, the attestation, and the certificate rotation are done. Lightwell and image signing are in the extra module.
 ====
 
 [[deploying-more-policies-to-the-emea-cluster]]

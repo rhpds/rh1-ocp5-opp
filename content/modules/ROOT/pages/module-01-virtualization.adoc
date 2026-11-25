@@ -2,7 +2,7 @@
 
 = Virtualization
 
-In this module you unify the fleet by placing a cluster and a virtual machine yourself. Red Hat Advanced Cluster Management (RHACM) is the control plane. Red Hat OpenShift Lightspeed is the hands-off alternative for this kind of placement. Here you do the work in the console so you can see where each workload lands. Application placement, RHACS, and image signing are in Module 3.
+In this module you place a cluster, then create one virtual machine workload. Ask Red Hat OpenShift Lightspeed to create it. If Lightspeed does not leave a running machine, create the same machine from a template. Then confirm the cluster that hosts the virtual machine is compliant in Red Hat Advanced Cluster Security (RHACS), using results collected by the Compliance Operator, and review the vulnerabilities RHACS reports for that virtual machine. Application placement and image signing stay in Module 3.
 
 **Operational and Security Sovereignty** means ensuring your organization can operate technology independently and autonomously, with complete control over your data, infrastructure, and security information.
 
@@ -118,70 +118,196 @@ NOTE: Deploying this Hosted Control Plane (HCP) cluster will take about 5 to 10 
 
 Virtual machines, containers, and AI workloads belong on the clusters you choose, not on whichever cluster is closest.
 
-RHACM lets you see those workloads from one console and place the virtual machine in this module on the fleet you just extended.
+RHACM lets you see those workloads from one console. The virtual machine in this module is created on the hub, first with OpenShift Lightspeed and then from a template if Lightspeed does not create it.
 
-[[create-manage-vms]]
+[[virtual-migration-toolkit]]
 
-== Create and Manage Virtual Machines Using the RHACM Console
+== Virtual migration toolkit
 
-Red Hat Advanced Cluster Management (RHACM) with OpenShift Virtualization provides unified, policy-as-code driven control of clusters and VMs from a single console. It lets you label resources, enforce placement, and automate compliance -- removing the need to jump between different management tools and ensuring consistent controls across all workloads.
+The Migration Toolkit for Virtualization is the product that moves an existing virtual machine onto OpenShift Virtualization. This environment has no VMware or remote OpenShift source to migrate from, so that wizard is not available here. The same outcome is a Red Hat Enterprise Linux virtual machine on this cluster. Create that workload with OpenShift Lightspeed. If Lightspeed does not leave the machine running, create the same machine from the Red Hat Enterprise Linux 9 template.
+
+Name the virtual machine `rhel9-lab-vm`. A virtual machine named *rhel-webserver* is already on the hub. Later exercises use it. Do not delete it or power it off.
 
 By the end of this exercise, you will:
 
-* Navigate the RHACM Search interface to locate Virtual Machine resources across the entire fleet.
-* Provision a new Virtual Machine using the RHACM Creation Wizard.
-* Perform Day 2 operations (Stop, Start, Migrate) directly from the multi-cluster view.
+* Ask OpenShift Lightspeed to create `rhel9-lab-vm`
+* Create that same virtual machine from a template when Lightspeed does not
+* Leave both `rhel9-lab-vm` and `rhel-webserver` running
 
-NOTE: You might noticed that we have already deployed a Virtual Machine for you called *rhel-webserver* we will use this machine in later exercises do not delete or power off as it will affect the other modules. 
-
-=== Deploy Virtual Machines Using the RHACM Console
+=== Create the workload with OpenShift Lightspeed
 
 .Procedure
-. Using the Hamburger menu select the dropdown and click on select *Fleet Virtualization*
+. In the OpenShift console, open *Virtualization*. If the console asks which cluster, stay on *local-cluster*.
+. Open *OpenShift Lightspeed* from the console masthead.
+. Paste this prompt:
 +
-image::08-dropdown-menu.png[link=self, window=blank, width=100%, Create VM]
+[source,role="execute"]
+----
+Create a virtual machine named rhel9-lab-vm from the Red Hat Enterprise Linux 9 VM template on local-cluster. Use the available boot source, start the virtual machine after creation, and set spec.domain.devices.autoattachVSOCK to true so Red Hat Advanced Cluster Security can scan the guest. Do not change or delete rhel-webserver.
+----
 +
-. Click the *Create* dropdown and select *From template*
-+
-image::09-create-menu.png[link=self, window=blank, width=100%, Create VM]
+. Read the reply before you approve anything. Accept the change only when the manifest is a `VirtualMachine` named `rhel9-lab-vm`, the boot source is the Red Hat Enterprise Linux 9 template, and it does not touch `rhel-webserver`.
+. If Lightspeed shows an *Apply* or *Create* action, approve it. Wait until the virtual machine status is *Running*. This can take a few minutes.
 
-. Under default template select *Red Hat Enterprise Linux 9 VM*
-+
-image::10-template-menu.png[link=self, window=blank, width=100%, Create VM]
-+
-NOTE: Notice all of the available templates to use, Windows VMs are fully supported as well.
+=== Verify
 
-. Under Virtual machine name, enter the following and leave all other options as default (Disk size, Disk Source):
+[source,role="execute"]
+----
+oc get vm -A
+----
+
+Expected output includes both virtual machines. Status values should be `Running`:
+
+----
+NAMESPACE        NAME             AGE   STATUS    READY
+<project>        rhel9-lab-vm     3m    Running   True
+<project>        rhel-webserver   1h    Running   True
+----
+
+* `rhel9-lab-vm` exists and is Running
+* `rhel-webserver` is still Running
+
+If `rhel9-lab-vm` is missing, or Lightspeed only described the steps, create it from the template.
+
+=== Create the same workload from a template
+
+Use this path when OpenShift Lightspeed did not create a running `rhel9-lab-vm`. If that virtual machine is already Running, skip this procedure.
+
+.Procedure
+. Open the perspective menu and select *Fleet Virtualization*.
 +
-[source,sh,role=execute]
+image::08-dropdown-menu.png[Fleet Virtualization in the perspective menu,link=self,window=blank,width=100%]
++
+. Click *Create* and select *From template*.
++
+image::09-create-menu.png[Create menu with From template,link=self,window=blank,width=100%]
++
+. If the wizard asks for a cluster, select *local-cluster*.
+. Under the default templates, select *Red Hat Enterprise Linux 9 VM*.
++
+image::10-template-menu.png[Red Hat Enterprise Linux 9 VM template,link=self,window=blank,width=100%]
++
+. For *Virtual machine name*, enter:
++
+[source,role="execute"]
 ----
 rhel9-lab-vm
 ----
 +
-[CAUTION]
-====
-Please notice all of the available options to configure the VM with, these will change depending on your operating system
-====
+. Leave disk size and disk source at the defaults.
+. Click *Quick create Virtual Machine* and wait until creation finishes. You should see the live console and the virtual machine stats.
 +
-. Click *Quick create Virtual Machine* and watch for progress, this should take a couple of minutes to complete.
+image::12-vm-finish.png[Virtual machine console after creation,link=self,window=blank,width=100%]
 
-. Once completed you will see the live console as well as stats about your VM.
+=== Verify
+
+[source,role="execute"]
+----
+oc get vm -A
+----
+
+* `rhel9-lab-vm` is Running
+* `rhel-webserver` is still Running
+
+[[virt-workload-compliance]]
+
+== Compliance for the virtualization workload
+
+The Compliance Operator runs the checks. RHACS is where you read them. The profiles below score the OpenShift cluster that hosts the virtual machine. They do not score packages inside the guest. Guest findings are in the next section.
+
+Module 3 builds a wider multi-cluster schedule. Here, scan the hub that runs `rhel9-lab-vm`.
+
+.Procedure
+. Open the *Advanced Cluster Security* tab.
+. Go to *Compliance* -> *OpenShift Schedules*.
+. Click *Create scan schedule* and enter:
 +
-image::12-vm-finish.png[link=self, window=blank, width=100%, Create VM]
+Name:
++
+[source,role="execute"]
+----
+virt-host-compliance
+----
++
+Description:
++
+[source,role="execute"]
+----
+Compliance scan for the cluster that hosts the virtual machine
+----
++
+* *Frequency*: Daily
+* *Time*: 00:00 UTC
+. Click *Next*.
+. Select the hub cluster. In this lab it is listed as *production* (`local-cluster`).
+. Click *Next*.
+. Add these profiles:
++
+* `ocp4-cis`
+* `ocp4-e8`
+. Click *Next*. Skip the delivery destination.
+. Click *Next*, review the schedule, and click *Save*.
+. On the schedule, open the actions menu and select *Run scan*.
+. When the scan finishes, open *Compliance* -> *OpenShift Coverage*.
+. Open the *E8* or *CIS* results and confirm *production* (`local-cluster`) is listed. Note whether the checks pass or fail.
 
-[TIP]
+[NOTE]
 ====
-*Hands-on in this module. Lightspeed when you want hands-off.*
+If *Create scan schedule* is unavailable, open *Compliance* -> *OpenShift Coverage* and review the latest result for *production*. Those results still come from the Compliance Operator through RHACS. Continue with that view.
+====
 
-You are placing this virtual machine yourself in the RHACM console. Red Hat OpenShift Lightspeed is the hands-off alternative for the same kind of placement. Virtual machines are still Kubernetes objects, so the same placement can later be declared with OpenShift GitOps.
+=== Verify
+
+* A compliance result exists for the hub cluster that runs `rhel9-lab-vm`
+* You can point to at least one passing or failing check on that cluster
+* `rhel9-lab-vm` is still Running
+
+[[virt-workload-vulnerabilities]]
+
+== Vulnerability management for the virtual machine
+
+RHACS indexes packages inside a Red Hat Enterprise Linux virtual machine when the guest reports them. This lab already enables virtual machine scanning. Read the results in the RHACS console, then ask OpenShift Lightspeed for the same findings.
+
+=== Review vulnerabilities in RHACS
+
+.Procedure
+. In the *Advanced Cluster Security* tab, go to *Vulnerability Management* -> *Results*.
+. Open the *Virtual Machines* tab.
+. Find `rhel9-lab-vm`. The *Scanned packages* column shows whether the guest agent is reporting and whether packages were indexed.
+. If `rhel9-lab-vm` has no indexed packages yet, open `rhel-webserver` instead. It is the same kind of RHEL workload and is already on the cluster. Do not power it off.
+. Open the virtual machine and review the findings. For one vulnerability, note the severity, the affected package, and any fix version.
+
+=== Ask OpenShift Lightspeed to query RHACS
+
+.Procedure
+. Return to the OpenShift console and open *OpenShift Lightspeed*.
+. Paste this prompt:
++
+[source,role="execute"]
+----
+Query Red Hat Advanced Cluster Security for vulnerabilities in the virtual machine rhel9-lab-vm. Summarize the highest severity findings, the affected packages, and whether the guest has been scanned. If rhel9-lab-vm has no results, query rhel-webserver instead. Do not delete or power off either virtual machine.
+----
++
+. Compare the reply with the virtual machine you opened in RHACS.
+
+[NOTE]
 ====
+If Lightspeed cannot reach RHACS, keep the console results from the previous procedure. Either path is the vulnerability review for this workload.
+====
+
+=== Verify
+
+* You opened a virtual machine on *Vulnerability Management* -> *Results* -> *Virtual Machines*
+* You can name one finding, or you can say the *Scanned packages* column shows the guest has not been indexed yet
+* `rhel9-lab-vm` and `rhel-webserver` are still Running
 
 [[virtualization-takeaways]]
-== Virtualization Takeaways
+== Virtualization takeaways
 
-* **Place clusters yourself** -- Use RHACM to create and label an OpenShift cluster so later workloads land in the right region.
-
-* **Place virtual machines on that fleet** -- Run a RHEL virtual machine from the same console that manages the clusters.
+* *Place the cluster* -- Use RHACM to create and label an OpenShift cluster so later workloads land in the right region.
+* *Create the virtual machine* -- Ask OpenShift Lightspeed for `rhel9-lab-vm`. If that does not leave a running machine, create the same machine from the Red Hat Enterprise Linux 9 template.
+* *Check the host* -- The Compliance Operator collects the scan, and RHACS shows whether the cluster that runs the virtual machine meets the CIS and Essential 8 checks.
+* *Check the guest* -- RHACS lists vulnerabilities for the virtual machine. OpenShift Lightspeed can ask RHACS for those same findings.
 
 [.text-center]
 image::https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHNuaGJoenozbDg5dnZ6eXNwbmluazg2MDM3c2doMHRybnV0YnJ6bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VhWVAa7rUtT3xKX6Cd/giphy.gif[Celebration, width=400, link=self, window=blank]
